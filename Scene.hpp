@@ -52,7 +52,7 @@ struct Scene {
 	struct Drawable {
 		//a 'Drawable' attaches attribute data to a transform:
 		Drawable(Transform *transform_) : transform(transform_) { assert(transform); }
-		Transform * const transform;
+		Transform * transform;
 
 		//Contains all the data needed to run the OpenGL pipeline:
 		struct Pipeline {
@@ -83,7 +83,7 @@ struct Scene {
 	struct Camera {
 		//a 'Camera' attaches camera data to a transform:
 		Camera(Transform *transform_) : transform(transform_) { assert(transform); }
-		Transform * const transform;
+		Transform * transform;
 		//NOTE: cameras are directed along their -z axis
 
 		//perspective camera parameters:
@@ -97,7 +97,7 @@ struct Scene {
 	struct Lamp {
 		//a 'Lamp' attaches light data to a transform:
 		Lamp(Transform *transform_) : transform(transform_) { assert(transform); }
-		Transform * const transform;
+		Transform * transform;
 		//NOTE: directional, spot, and hemisphere lights are directed along their -z axis
 
 		enum Type : char {

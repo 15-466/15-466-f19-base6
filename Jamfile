@@ -154,7 +154,10 @@ if $(OS) = NT { #Windows
 
 #Store the names of all the .cpp files to build into a variable:
 GAME_NAMES =
+	DEBUG_InspectionProgram
+	DEBUG_ShowMeshesMode
 	Scene
+	MeshBuffer
 	Sound
 	load_wav
 	load_opus

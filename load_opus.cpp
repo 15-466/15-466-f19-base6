@@ -1,6 +1,6 @@
 #include "load_opus.hpp"
 
-#include "opusfile.h"
+#include <opusfile.h>
 
 #include <cassert>
 #include <memory>

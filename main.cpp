@@ -4,6 +4,9 @@
 //Starting mode:
 #include "StoryMode.hpp"
 
+//Mode used to show data file for debugging / testing:
+#include "DEBUG_ShowMeshesMode.hpp"
+
 //Deal with calling resource loading functions:
 #include "Load.hpp"
 
@@ -99,7 +102,31 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< StoryMode >());
+	if (argc > 1) {
+		bool usage = false;
+		MeshBuffer *buffer = nullptr;
+		if (argc == 2) {
+			try {
+				buffer = new MeshBuffer(argv[1]);
+			} catch (std::exception &e) {
+				std::cerr << "ERROR: " << e.what() << std::endl;
+				usage = true;
+				buffer = nullptr;
+			}
+		}
+		if (buffer) {
+			Mode::set_current(std::make_shared< DEBUG_ShowMeshesMode >(*buffer));
+		} else {
+			usage = true;
+		}
+		if (usage) {
+			std::cerr << "Usage:\n\t" << argv[0] << " [path/to/meshes.pnct]" << std::endl;
+			return 1;
+		}
+	} else {
+		//no wacky command-line shenanigans:
+		Mode::set_current(std::make_shared< StoryMode >());
+	}
 
 	//------------ main loop ------------
 
