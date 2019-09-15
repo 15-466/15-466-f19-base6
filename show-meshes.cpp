@@ -1,25 +1,11 @@
-//Mode.hpp declares the "Mode::current" static member variable, which is used to decide where event-handling, updating, and drawing events go:
 #include "Mode.hpp"
-
-//Starting mode:
-#include "StoryMode.hpp"
-
-//Deal with calling resource loading functions:
+#include "ShowMeshesMode.hpp"
 #include "Load.hpp"
-
-//GL.hpp will include a non-namespace-polluting set of opengl prototypes:
 #include "GL.hpp"
-
-//Sound subsystem:
-#include "Sound.hpp"
-
-//for screenshots:
 #include "load_save_png.hpp"
 
-//Includes for libSDL:
 #include <SDL.h>
 
-//...and for c++ standard library functions:
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
@@ -53,9 +39,9 @@ int main(int argc, char **argv) {
 
 	//create window:
 	SDL_Window *window = SDL_CreateWindow(
-		"gp19 the planet of choices", //TODO: remember to set a title for your game!
+		"pnct viewer",
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		512, 448, //TODO: modify window size if you'd like
+		800, 800,
 		SDL_WINDOW_OPENGL
 		| SDL_WINDOW_RESIZABLE //uncomment to allow resizing
 		| SDL_WINDOW_ALLOW_HIGHDPI //uncomment for full resolution on high-DPI screens
@@ -89,17 +75,31 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	//set up sound output:
-	Sound::init();
-
-	//Hide mouse cursor (note: showing can be useful for debugging):
-	//SDL_ShowCursor(SDL_DISABLE);
-
 	//------------ load resources --------------
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< StoryMode >());
+	bool usage = false;
+	MeshBuffer *buffer = nullptr;
+	if (argc == 2) {
+		try {
+			buffer = new MeshBuffer(argv[1]);
+		} catch (std::exception &e) {
+			std::cerr << "ERROR: " << e.what() << std::endl;
+			usage = true;
+			buffer = nullptr;
+		}
+	}
+	if (buffer) {
+		Mode::set_current(std::make_shared< ShowMeshesMode >(*buffer));
+	}
+	if (!Mode::current) {
+		usage = true;
+	}
+	if (usage) {
+		std::cerr << "Usage:\n\t" << argv[0] << " [path/to/meshes.pnct]" << std::endl;
+		return 1;
+	}
 
 	//------------ main loop ------------
 
@@ -180,9 +180,6 @@ int main(int argc, char **argv) {
 
 
 	//------------  teardown ------------
-
-	Sound::shutdown();
-
 	SDL_GL_DeleteContext(context);
 	context = 0;
 

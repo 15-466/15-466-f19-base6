@@ -1,11 +1,11 @@
-#include "DEBUG_ShowMeshesMode.hpp"
+#include "ShowMeshesMode.hpp"
 
-#include "DEBUG_InspectionProgram.hpp"
+#include "ShowMeshesProgram.hpp"
 
 #include <iostream>
 
-DEBUG_ShowMeshesMode::DEBUG_ShowMeshesMode(MeshBuffer const &buffer_) : buffer(buffer_) {
-	vao = buffer.make_vao_for_program(DEBUG_inspection_program->program);
+ShowMeshesMode::ShowMeshesMode(MeshBuffer const &buffer_) : buffer(buffer_) {
+	vao = buffer.make_vao_for_program(show_meshes_program->program);
 
 	//Set up scene:
 	{ //create a single camera:
@@ -21,7 +21,7 @@ DEBUG_ShowMeshesMode::DEBUG_ShowMeshesMode(MeshBuffer const &buffer_) : buffer(b
 		scene.drawables.emplace_back(&scene.transforms.back());
 		scene_drawable = &scene.drawables.back();
 
-		scene_drawable->pipeline = DEBUG_inspection_program_pipeline;
+		scene_drawable->pipeline = show_meshes_program_pipeline;
 		scene_drawable->pipeline.vao = vao;
 		//these will be updated by the mesh selection code:
 		scene_drawable->pipeline.type = GL_TRIANGLES;
@@ -33,10 +33,10 @@ DEBUG_ShowMeshesMode::DEBUG_ShowMeshesMode(MeshBuffer const &buffer_) : buffer(b
 	select_prev_mesh();
 }
 
-DEBUG_ShowMeshesMode::~DEBUG_ShowMeshesMode() {
+ShowMeshesMode::~ShowMeshesMode() {
 }
 
-bool DEBUG_ShowMeshesMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
+bool ShowMeshesMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	if (evt.type == SDL_KEYDOWN) {
 		if (evt.key.keysym.sym == SDLK_RIGHT) {
 			select_next_mesh();
@@ -100,7 +100,7 @@ bool DEBUG_ShowMeshesMode::handle_event(SDL_Event const &evt, glm::uvec2 const &
 	return false;
 }
 
-void DEBUG_ShowMeshesMode::draw(glm::uvec2 const &drawable_size) {
+void ShowMeshesMode::draw(glm::uvec2 const &drawable_size) {
 	//--- use camera structure to set up scene camera ---
 
 	scene_camera->transform->rotation =
@@ -122,7 +122,7 @@ void DEBUG_ShowMeshesMode::draw(glm::uvec2 const &drawable_size) {
 	scene.draw(*scene_camera);
 }
 
-void DEBUG_ShowMeshesMode::select_prev_mesh() {
+void ShowMeshesMode::select_prev_mesh() {
 	auto f = buffer.meshes.find(current_mesh_name);
 	if (f != buffer.meshes.end()) --f;
 	if (f == buffer.meshes.end()) f = buffer.meshes.begin();
@@ -140,7 +140,7 @@ void DEBUG_ShowMeshesMode::select_prev_mesh() {
 	}
 }
 
-void DEBUG_ShowMeshesMode::select_next_mesh() {
+void ShowMeshesMode::select_next_mesh() {
 	auto f = buffer.meshes.find(current_mesh_name);
 	if (f != buffer.meshes.end()) ++f;
 	if (f == buffer.meshes.end()) {

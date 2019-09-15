@@ -2,7 +2,7 @@
 
 /*
  *
- * DEBUG_ShowMeshesMode exists to show the contents of MeshBuffers; this can be useful
+ * ShowMeshesMode exists to show the contents of MeshBuffers; this can be useful
  * if, e.g., you aren't sure if things are being exported properly.
  *
  */
@@ -11,9 +11,9 @@
 #include "Scene.hpp"
 #include "MeshBuffer.hpp"
 
-struct DEBUG_ShowMeshesMode : Mode {
-	DEBUG_ShowMeshesMode(MeshBuffer const &buffer);
-	virtual ~DEBUG_ShowMeshesMode();
+struct ShowMeshesMode : Mode {
+	ShowMeshesMode(MeshBuffer const &buffer);
+	virtual ~ShowMeshesMode();
 
 	virtual bool handle_event(SDL_Event const &, glm::uvec2 const &window_size) override;
 	virtual void draw(glm::uvec2 const &drawable_size) override;

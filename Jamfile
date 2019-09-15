@@ -154,25 +154,32 @@ if $(OS) = NT { #Windows
 
 #Store the names of all the .cpp files to build into a variable:
 GAME_NAMES =
-	DEBUG_InspectionProgram
-	DEBUG_ShowMeshesMode
-	Scene
-	MeshBuffer
 	Sound
 	load_wav
 	load_opus
 	DrawSprites
+	Sprite
 	MenuMode
 	StoryMode
-	Sprite
-	data_path
 	main
+	data_path
+	ColorTextureProgram
+	;
+
+COMMON_NAMES =
+	Scene
+	MeshBuffer
 	load_save_png
 	gl_compile_program
-	ColorTextureProgram
 	Mode
 	GL
 	Load
+	;
+
+SHOW_MESHES_NAMES =
+	show-meshes
+	ShowMeshesProgram
+	ShowMeshesMode
 	;
 
 PACK_SPRITES_NAMES =
@@ -180,10 +187,13 @@ PACK_SPRITES_NAMES =
 	;
 
 LOCATE_TARGET = objs ; #put objects in 'objs' directory
-Objects $(GAME_NAMES:S=.cpp) $(PACK_SPRITES_NAMES:S=.cpp) ;
+Objects $(GAME_NAMES:S=.cpp) $(COMMON_NAMES:S=.cpp) $(SHOW_MESHES_NAMES:S=.cpp) $(PACK_SPRITES_NAMES:S=.cpp) ;
 
 LOCATE_TARGET = dist ; #put main in 'dist' directory
-MainFromObjects the-planet : $(GAME_NAMES:S=$(SUFOBJ)) ;
+MainFromObjects the-planet : $(GAME_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
 
 LOCATE_TARGET = sprites ; #put pack-sprites utility in the 'sprites' directory:
 MainFromObjects pack-sprites : $(PACK_SPRITES_NAMES:S=$(SUFOBJ)) load_save_png$(SUFOBJ) ;
+
+LOCATE_TARGET = scenes ; #put show-meshes utility in the 'scenes' directory:
+MainFromObjects show-meshes : $(SHOW_MESHES_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;

@@ -16,3 +16,7 @@ sprites/pack-sprites.ilk
 sprites/pack-sprites.pdb
 sprites/the-planet/
 scenes/*.blend[0-9]
+scenes/show-meshes
+scenes/show-meshes.exe
+scenes/show-meshes.ilk
+scenes/show-meshes.pdb

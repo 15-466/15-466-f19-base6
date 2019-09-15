@@ -7,9 +7,9 @@
 
 //Shader program that provides various modes for visualizing positions,
 // colors, normals, and texture coordinates; mostly useful for debugging.
-struct DEBUG_InspectionProgram {
-	DEBUG_InspectionProgram();
-	~DEBUG_InspectionProgram();
+struct ShowMeshesProgram {
+	ShowMeshesProgram();
+	~ShowMeshesProgram();
 
 	GLuint program = 0;
 
@@ -30,5 +30,5 @@ struct DEBUG_InspectionProgram {
 	//no textures used
 };
 
-extern Load< DEBUG_InspectionProgram > DEBUG_inspection_program;
-extern Scene::Drawable::Pipeline DEBUG_inspection_program_pipeline; //Drawable::Pipeline already initialized with proper uniform locations for this program.
+extern Load< ShowMeshesProgram > show_meshes_program;
+extern Scene::Drawable::Pipeline show_meshes_program_pipeline; //Drawable::Pipeline already initialized with proper uniform locations for this program.

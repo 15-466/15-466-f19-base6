@@ -1,23 +1,23 @@
-#include "DEBUG_InspectionProgram.hpp"
+#include "ShowMeshesProgram.hpp"
 
 #include "gl_compile_program.hpp"
 #include "gl_errors.hpp"
 
-Scene::Drawable::Pipeline DEBUG_inspection_program_pipeline;
+Scene::Drawable::Pipeline show_meshes_program_pipeline;
 
-Load< DEBUG_InspectionProgram > DEBUG_inspection_program(LoadTagEarly, []() -> DEBUG_InspectionProgram * {
-	auto *ret = new DEBUG_InspectionProgram();
+Load< ShowMeshesProgram > show_meshes_program(LoadTagEarly, []() -> ShowMeshesProgram * {
+	auto *ret = new ShowMeshesProgram();
 
-	DEBUG_inspection_program_pipeline.program = ret->program;
+	show_meshes_program_pipeline.program = ret->program;
 
-	DEBUG_inspection_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
-	DEBUG_inspection_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
-	DEBUG_inspection_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
+	show_meshes_program_pipeline.OBJECT_TO_CLIP_mat4 = ret->OBJECT_TO_CLIP_mat4;
+	show_meshes_program_pipeline.OBJECT_TO_LIGHT_mat4x3 = ret->OBJECT_TO_LIGHT_mat4x3;
+	show_meshes_program_pipeline.NORMAL_TO_LIGHT_mat3 = ret->NORMAL_TO_LIGHT_mat3;
 
 	return ret;
 });
 
-DEBUG_InspectionProgram::DEBUG_InspectionProgram() {
+ShowMeshesProgram::ShowMeshesProgram() {
 	//Compile vertex and fragment shaders using the convenient 'gl_compile_program' helper function:
 	program = gl_compile_program(
 		//vertex shader:
@@ -87,7 +87,7 @@ DEBUG_InspectionProgram::DEBUG_InspectionProgram() {
 	INSPECT_MODE_int = glGetUniformLocation(program, "INSPECT_MODE");
 }
 
-DEBUG_InspectionProgram::~DEBUG_InspectionProgram() {
+ShowMeshesProgram::~ShowMeshesProgram() {
 	glDeleteProgram(program);
 	program = 0;
 }
