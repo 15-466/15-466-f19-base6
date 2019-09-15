@@ -50,9 +50,23 @@ else:
 
 #meshes to write:
 to_write = set()
-for obj in collection.objects:
-	if obj.type == 'MESH':
-		to_write.add(obj.data)
+def add_meshes(from_collection):
+	global to_write
+	for obj in from_collection.objects:
+		if obj.type == 'MESH':
+			to_write.add(obj.data)
+	for child in from_collection.children:
+		add_meshes(child)
+
+add_meshes(collection)
+
+#set all collections visible: (so that meshes can be selected for triangulation)
+def set_visible(layer_collection):
+	layer_collection.exclude = False
+	for child in layer_collection.children:
+		set_visible(child)
+
+set_visible(bpy.context.view_layer.layer_collection)
 
 #data contains vertex, normal, color, and texture data from the meshes:
 data = b''
@@ -64,7 +78,7 @@ strings = b''
 index = b''
 
 vertex_count = 0
-for obj in collection.objects:
+for obj in bpy.data.objects:
 	if obj.data in to_write:
 		to_write.remove(obj.data)
 	else:

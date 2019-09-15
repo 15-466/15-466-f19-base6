@@ -110,7 +110,7 @@ void ShowMeshesMode::draw(glm::uvec2 const &drawable_size) {
 	;
 	scene_camera->transform->position = camera.target + camera.radius * (scene_camera->transform->rotation * glm::vec3(0.0f, 0.0f, 1.0f));
 	scene_camera->transform->scale = glm::vec3(1.0f);
-	scene_camera->aspect = float(drawable_size.x) / float(drawable_size.x);
+	scene_camera->aspect = float(drawable_size.x) / float(drawable_size.y);
 
 
 	//--- actual drawing ---

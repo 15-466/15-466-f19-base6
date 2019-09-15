@@ -159,9 +159,10 @@ GAME_NAMES =
 	load_opus
 	DrawSprites
 	ColorTextureProgram
+	LitColorTextureProgram
 	Sprite
 	MenuMode
-	StoryMode
+	ObserveMode
 	main
 	data_path
 	;
@@ -186,18 +187,33 @@ SHOW_MESHES_NAMES =
 	ShowMeshesMode
 	;
 
+
+SHOW_SCENE_NAMES =
+	show-scene
+	ShowSceneProgram
+	ShowSceneMode
+	;
+
+
 PACK_SPRITES_NAMES =
 	pack-sprites
 	;
 
 LOCATE_TARGET = objs ; #put objects in 'objs' directory
-Objects $(GAME_NAMES:S=.cpp) $(COMMON_NAMES:S=.cpp) $(SHOW_MESHES_NAMES:S=.cpp) $(PACK_SPRITES_NAMES:S=.cpp) ;
+Objects
+	$(GAME_NAMES:S=.cpp)
+	$(COMMON_NAMES:S=.cpp)
+	$(SHOW_MESHES_NAMES:S=.cpp)
+	$(SHOW_SCENE_NAMES:S=.cpp)
+	$(PACK_SPRITES_NAMES:S=.cpp)
+	;
 
 LOCATE_TARGET = dist ; #put main in 'dist' directory
-MainFromObjects the-planet : $(GAME_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
+MainFromObjects watch : $(GAME_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
 
 LOCATE_TARGET = sprites ; #put pack-sprites utility in the 'sprites' directory:
 MainFromObjects pack-sprites : $(PACK_SPRITES_NAMES:S=$(SUFOBJ)) load_save_png$(SUFOBJ) ;
 
-LOCATE_TARGET = scenes ; #put show-meshes utility in the 'scenes' directory:
+LOCATE_TARGET = scenes ; #put show-meshes and show-scene utilities in the 'scenes' directory:
 MainFromObjects show-meshes : $(SHOW_MESHES_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
+MainFromObjects show-scene : $(SHOW_SCENE_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
