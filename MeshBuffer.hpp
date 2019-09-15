@@ -8,7 +8,9 @@
  */
 
 #include "GL.hpp"
+#include <glm/glm.hpp>
 #include <map>
+#include <limits>
 
 struct MeshBuffer {
 	GLuint buffer = 0; //OpenGL array buffer containing the mesh data
@@ -23,6 +25,9 @@ struct MeshBuffer {
 		GLenum type = GL_TRIANGLES; //type of primitives in mesh
 		GLuint start = 0; //index of first vertex
 		GLuint count = 0; //count of vertices
+		//useful for debug visualization and (perhaps, eventually) collision detection:
+		glm::vec3 min = glm::vec3( std::numeric_limits< float >::infinity());
+		glm::vec3 max = glm::vec3(-std::numeric_limits< float >::infinity());
 	};
 	const Mesh &lookup(std::string const &name) const;
 	

@@ -32,6 +32,8 @@ struct ShowMeshesMode : Mode {
 
 	//currently selected mesh:
 	std::string current_mesh_name = "";
+	glm::vec3 current_mesh_min = glm::vec3(0.0f);
+	glm::vec3 current_mesh_max = glm::vec3(0.0f);
 	void select_prev_mesh();
 	void select_next_mesh();
 	

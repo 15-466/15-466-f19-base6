@@ -1,6 +1,7 @@
 #include "ShowMeshesMode.hpp"
 
 #include "ShowMeshesProgram.hpp"
+#include "DrawLines.hpp"
 
 #include <iostream>
 
@@ -120,6 +121,34 @@ void ShowMeshesMode::draw(glm::uvec2 const &drawable_size) {
 	glDepthFunc(GL_LEQUAL);
 
 	scene.draw(*scene_camera);
+
+	{ //decorate with some lines:
+		DrawLines draw_lines(scene_camera->make_projection() * scene_camera->transform->make_world_to_local());
+
+		//axis (unit-length):
+		draw_lines.draw(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::u8vec4(0xff, 0x00, 0x00, 0xff));
+		draw_lines.draw(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::u8vec4(0x00, 0xff, 0x00, 0xff));
+		draw_lines.draw(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::u8vec4(0x00, 0x00, 0xff, 0xff));
+
+		//bounding box:
+		glm::vec3 r = 0.5f * (current_mesh_max - current_mesh_min);
+		glm::vec3 c = 0.5f * (current_mesh_max + current_mesh_min);
+		glm::mat4x3 mat(
+			glm::vec3(r.x,  0.0f, 0.0f),
+			glm::vec3(0.0f,  r.y, 0.0f),
+			glm::vec3(0.0f, 0.0f,  r.z),
+			c
+		);
+		draw_lines.draw_box(mat, glm::u8vec4(0xdd, 0xdd, 0xdd, 0xff));
+
+		//mesh name:
+		draw_lines.draw_text("'" + current_mesh_name + "'",
+			current_mesh_min + glm::vec3(0.0f, -0.20f, 0.0f),
+			0.15f * glm::vec3(1.0f, 0.0f, 0.0f),
+			0.15f * glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::u8vec4(0xff, 0xff, 0xff, 0xff)
+		);
+	}
 }
 
 void ShowMeshesMode::select_prev_mesh() {
@@ -132,11 +161,15 @@ void ShowMeshesMode::select_prev_mesh() {
 		scene_drawable->pipeline.type = f->second.type;
 		scene_drawable->pipeline.start = f->second.start;
 		scene_drawable->pipeline.count = f->second.count;
+		current_mesh_min = f->second.min;
+		current_mesh_max = f->second.max;
 	} else {
 		current_mesh_name = "";
 		scene_drawable->pipeline.type = GL_TRIANGLES;
 		scene_drawable->pipeline.start = 0;
 		scene_drawable->pipeline.count = 0;
+		current_mesh_min = glm::vec3(0.0f);
+		current_mesh_max = glm::vec3(0.0f);
 	}
 }
 
@@ -157,10 +190,14 @@ void ShowMeshesMode::select_next_mesh() {
 		scene_drawable->pipeline.type = f->second.type;
 		scene_drawable->pipeline.start = f->second.start;
 		scene_drawable->pipeline.count = f->second.count;
+		current_mesh_min = f->second.min;
+		current_mesh_max = f->second.max;
 	} else {
 		current_mesh_name = "";
 		scene_drawable->pipeline.type = GL_TRIANGLES;
 		scene_drawable->pipeline.start = 0;
 		scene_drawable->pipeline.count = 0;
+		current_mesh_min = glm::vec3(0.0f);
+		current_mesh_max = glm::vec3(0.0f);
 	}
 }

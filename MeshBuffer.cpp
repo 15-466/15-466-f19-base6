@@ -17,17 +17,18 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 	std::ifstream file(filename, std::ios::binary);
 
 	GLuint total = 0;
+
+	struct Vertex {
+		glm::vec3 Position;
+		glm::vec3 Normal;
+		glm::u8vec4 Color;
+		glm::vec2 TexCoord;
+	};
+	static_assert(sizeof(Vertex) == 3*4+3*4+4*1+2*4, "Vertex is packed.");
+	std::vector< Vertex > data;
+
 	//read + upload data chunk:
 	if (filename.size() >= 5 && filename.substr(filename.size()-5) == ".pnct") {
-		struct Vertex {
-			glm::vec3 Position;
-			glm::vec3 Normal;
-			glm::u8vec4 Color;
-			glm::vec2 TexCoord;
-		};
-		static_assert(sizeof(Vertex) == 3*4+3*4+4*1+2*4, "Vertex is packed.");
-
-		std::vector< Vertex > data;
 		read_chunk(file, "pnct", &data);
 
 		//upload data:
@@ -71,6 +72,10 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 			mesh.type = GL_TRIANGLES;
 			mesh.start = entry.vertex_begin;
 			mesh.count = entry.vertex_end - entry.vertex_begin;
+			for (uint32_t v = entry.vertex_begin; v < entry.vertex_end; ++v) {
+				mesh.min = glm::min(mesh.min, data[v].Position);
+				mesh.max = glm::max(mesh.max, data[v].Position);
+			}
 			bool inserted = meshes.insert(std::make_pair(name, mesh)).second;
 			if (!inserted) {
 				std::cerr << "WARNING: mesh name '" + name + "' in filename '" + filename + "' collides with existing mesh." << std::endl;

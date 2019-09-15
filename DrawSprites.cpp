@@ -20,7 +20,7 @@
 static GLuint vertex_buffer = 0;
 static GLuint vertex_buffer_for_color_texture_program = 0;
 
-Load< void > setup_buffers(LoadTagDefault, [](){
+static Load< void > setup_buffers(LoadTagDefault, [](){
 	//you may recognize this init code from PongMode.cpp in base0:
 
 	{ //set up vertex buffer:
@@ -238,14 +238,14 @@ DrawSprites::~DrawSprites() {
 	//use the mapping vertex_buffer_for_color_texture_program to fetch vertex data:
 	glBindVertexArray(vertex_buffer_for_color_texture_program);
 
-	//bind the solid white texture to location zero:
+	//bind the sprite texture to location zero:
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, atlas.tex);
 
 	//run the OpenGL pipeline:
 	glDrawArrays(GL_TRIANGLES, 0, GLsizei(attribs.size()));
 
-	//unbind the solid white texture:
+	//unbind the sprite texture:
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	//reset vertex array to none:

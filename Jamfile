@@ -158,15 +158,19 @@ GAME_NAMES =
 	load_wav
 	load_opus
 	DrawSprites
+	ColorTextureProgram
 	Sprite
 	MenuMode
 	StoryMode
 	main
 	data_path
-	ColorTextureProgram
 	;
 
 COMMON_NAMES =
+	PathFont
+	PathFont-font
+	DrawLines
+	ColorProgram
 	Scene
 	MeshBuffer
 	load_save_png
