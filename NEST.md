@@ -10,7 +10,7 @@ Here is a quick overview of what is included. For further information, ☺read t
     - ```main.cpp``` creates the game window and contains the main loop. Set your window title, size, and initial Mode here.
     - ```MenuMode.*pp``` declaration+definition for a sprite-based menu, with text drawing and menu movement sounds.
     - **New:** ```ObserveMode.*pp``` mode that makes use of a Scene, switching between cameras in that scene.
-    - ```Sound.*pp``` a basic game audio system. You may wish to add extra parameters (like looping) to sounds.
+    - ```Sound.*pp``` a basic game audio system. **New:** sounds can loop.
     - ```Jamfile``` responsible for telling FTJam how to build the project. Change this when you add additional .cpp files and to change your runtime executable's name.
     - ```.gitignore``` ignores generated files. You will need to change it if your executable name changes. (If you find yourself changing it to ignore, e.g., your editor's swap files you should probably, instead be investigating making this change in the global git configuration.)
 - Useful code (files you should investigate, but probably won't change):

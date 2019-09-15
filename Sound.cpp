@@ -108,7 +108,15 @@ void Sound::unlock() {
 }
 
 std::shared_ptr< Sound::PlayingSample > Sound::play(Sample const &sample, float pan, float volume) {
-	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, pan, volume);
+	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, pan, volume, false);
+	lock();
+	playing_samples.emplace_back(playing_sample);
+	unlock();
+	return playing_sample;
+}
+
+std::shared_ptr< Sound::PlayingSample > Sound::loop(Sample const &sample, float pan, float volume) {
+	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, pan, volume, true);
 	lock();
 	playing_samples.emplace_back(playing_sample);
 	unlock();
@@ -215,7 +223,11 @@ void mix_audio(void *, Uint8 *buffer_, int len) {
 			//update position in sample:
 			playing_sample.i += 1;
 			if (playing_sample.i == playing_sample.data.size()) {
-				break;
+				if (playing_sample.loop) {
+					i = 0;
+				} else {
+					break;
+				}
 			}
 
 			//update pan values:

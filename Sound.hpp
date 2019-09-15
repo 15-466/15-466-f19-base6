@@ -67,8 +67,8 @@ struct PlayingSample {
 	Ramp< float > volume = Ramp< float >(1.0f);
 	Ramp< float > pan = Ramp< float >(0.0f);
 
-	PlayingSample(Sample const &sample_, float volume_, float pan_)
-		: data(sample_.data), volume(volume_), pan(pan_) { }
+	PlayingSample(Sample const &sample_, float volume_, float pan_, bool loop_)
+		: data(sample_.data), loop(loop_), volume(volume_), pan(pan_) { }
 };
 
 // ------- global functions -------
@@ -80,6 +80,14 @@ void shutdown(); //call Sound::shutdown() from main.cpp to gracefully(-ish) exit
 //Call 'Sound::play' to play a sample once.
 //  if you hang on to the return value, you can change the panning, volume, or stop playback early.
 std::shared_ptr< PlayingSample > play(
+	Sample const &sample,
+	float volume = 1.0f,
+	float pan = 0.0f //-1.0f == hard left, 1.0f == hard right
+);
+
+//Call 'Sound::loop' to play a sample ~forever~.
+//  if you hang on to the return value, you can change the panning, volume, or stop playback.
+std::shared_ptr< PlayingSample > loop(
 	Sample const &sample,
 	float volume = 1.0f,
 	float pan = 0.0f //-1.0f == hard left, 1.0f == hard right
