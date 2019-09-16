@@ -30,6 +30,9 @@ namespace {
 //global volume control:
 Sound::Ramp< float > Sound::volume = Sound::Ramp< float >(1.0f);
 
+//global listener information:
+Sound::Listener Sound::listener;
+
 //This audio-mixing callback is defined below:
 void mix_audio(void *, Uint8 *buffer_, int len);
 
@@ -48,17 +51,6 @@ Sound::Sample::Sample(std::string const &filename) {
 Sound::Sample::Sample(std::vector< float > const &data_) : data(data_) {
 }
 
-void Sound::PlayingSample::stop(float ramp) {
-	lock();
-	if (!stopped) {
-		stopped = true;
-		volume.target = 0.0f;
-		volume.ramp = ramp;
-	} else {
-		volume.ramp = std::min(volume.ramp, ramp);
-	}
-	unlock();
-}
 
 
 void Sound::init() {
@@ -108,7 +100,15 @@ void Sound::unlock() {
 }
 
 std::shared_ptr< Sound::PlayingSample > Sound::play(Sample const &sample, float pan, float volume) {
-	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, pan, volume, false);
+	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, volume, pan, false);
+	lock();
+	playing_samples.emplace_back(playing_sample);
+	unlock();
+	return playing_sample;
+}
+
+std::shared_ptr< Sound::PlayingSample > Sound::play_3D(Sample const &sample, float volume, glm::vec3 const &position, float half_volume_radius) {
+	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, volume, position, half_volume_radius, false);
 	lock();
 	playing_samples.emplace_back(playing_sample);
 	unlock();
@@ -116,7 +116,17 @@ std::shared_ptr< Sound::PlayingSample > Sound::play(Sample const &sample, float 
 }
 
 std::shared_ptr< Sound::PlayingSample > Sound::loop(Sample const &sample, float pan, float volume) {
-	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, pan, volume, true);
+	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, volume, pan, true);
+	lock();
+	playing_samples.emplace_back(playing_sample);
+	unlock();
+	return playing_sample;
+}
+
+
+
+std::shared_ptr< Sound::PlayingSample > Sound::loop_3D(Sample const &sample, float volume, glm::vec3 const &position, float half_volume_radius) {
+	std::shared_ptr< Sound::PlayingSample > playing_sample = std::make_shared< Sound::PlayingSample >(sample, volume, position, half_volume_radius, true);
 	lock();
 	playing_samples.emplace_back(playing_sample);
 	unlock();
@@ -138,6 +148,65 @@ void Sound::set_volume(float new_volume, float ramp) {
 	unlock();
 }
 
+//------------------
+
+void Sound::PlayingSample::set_volume(float new_volume, float ramp) {
+	Sound::lock();
+	volume.set(new_volume, ramp);
+	Sound::unlock();
+}
+
+void Sound::PlayingSample::set_pan(float new_pan, float ramp) {
+	if (!(pan.value == pan.value)) return; //ignore if not in '2D' mode
+	Sound::lock();
+	pan.set(new_pan, ramp);
+	Sound::unlock();
+}
+
+void Sound::PlayingSample::set_position(glm::vec3 const &new_position, float ramp) {
+	if ((pan.value == pan.value)) return; //ignore if not in '3D' mode
+	Sound::lock();
+	position.set(new_position, ramp);
+	Sound::unlock();
+}
+
+void Sound::PlayingSample::set_half_volume_radius(float new_radius, float ramp) {
+	if ((pan.value == pan.value)) return; //ignore if not in '3D' mode
+	Sound::lock();
+	half_volume_radius.set(new_radius, ramp);
+	Sound::unlock();
+}
+
+void Sound::PlayingSample::stop(float ramp) {
+	Sound::lock();
+	if (!stopped) {
+		stopped = true;
+		volume.target = 0.0f;
+		volume.ramp = ramp;
+	} else {
+		volume.ramp = std::min(volume.ramp, ramp);
+	}
+	Sound::unlock();
+}
+
+//------------------
+
+void Sound::Listener::set_position(glm::vec3 const &new_position, float ramp) {
+	Sound::lock();
+	position.set(new_position, ramp);
+	Sound::unlock();
+}
+
+void Sound::Listener::set_right(glm::vec3 const &new_right, float ramp) {
+	Sound::lock();
+	//some extra code to make sure right is always a unit vector:
+	if (new_right == glm::vec3(0.0f)) {
+		right.set(glm::vec3(1.0f, 0.0f, 0.0f), ramp);
+	} else {
+		right.set(glm::normalize(new_right), ramp);
+	}
+	Sound::unlock();
+}
 
 //------------------------ internals --------------------------------
 
@@ -153,8 +222,42 @@ inline void compute_pan_weights(float pan, float *left, float *right) {
 	*right = std::sin(ang);
 }
 
-//helper: ramp update for single values:
+//helper: 3D audio panning
+void compute_pan_from_listener_and_position(
+	glm::vec3 const &listener_position,
+	glm::vec3 const &listener_right,
+	glm::vec3 const &source_position,
+	float source_half_radius,
+	float *left, float *right
+	) {
+	glm::vec3 to = source_position - listener_position;
+	float distance = glm::length(to);
+	//start by panning based on direction.
+	//note that for a LR fade to sound uniform, sound power (squared magnitude) should remain constant.
+	if (distance == 0.0f) {
+		*left = *right = std::sqrt(2.0f);
+	} else {
+		//amt ranges from -1 (most left) to 1 (most right):
+		float amt = glm::dot(listener_right, to) / distance;
+		//turn into an angle from 0.0f (most left) to pi/2 (most right):
+		float ang = 0.5f * 3.1415926f * (0.5f * (amt + 1.0f));
+		*left = std::cos(ang);
+		*right = std::sin(ang);
+
+		//squared distance attenuation is realistic if there are no walls,
+		// but I'm going to use linear because it's sounds better to me.
+		// (feel free to change it, of course)
+		//want att = 0.5f at distance == half_volume_radius
+		float att = 1.0f / (1.0f + (distance / source_half_radius));
+		*left *= att;
+		*right *= att;
+	}
+}
+
+//helper: ramp updates...
 constexpr float const RAMP_STEP = float(MIX_SAMPLES) / float(AUDIO_RATE);
+
+//helper: ...for single values:
 void step_value_ramp(Sound::Ramp< float > &ramp) {
 	if (ramp.ramp < RAMP_STEP) {
 		ramp.value = ramp.target;
@@ -164,6 +267,51 @@ void step_value_ramp(Sound::Ramp< float > &ramp) {
 		ramp.ramp -= RAMP_STEP;
 	}
 }
+
+//helper: ...for 3D positions:
+void step_position_ramp(Sound::Ramp< glm::vec3 > &ramp) {
+	if (ramp.ramp < RAMP_STEP) {
+		ramp.value = ramp.target;
+		ramp.ramp = 0.0f;
+	} else {
+		ramp.value = glm::mix(ramp.value, ramp.target, RAMP_STEP / ramp.ramp);
+		ramp.ramp -= RAMP_STEP;
+	}
+}
+
+//helper: ...for 3D directions:
+void step_direction_ramp(Sound::Ramp< glm::vec3 > &ramp) {
+	if (ramp.ramp < RAMP_STEP) {
+		ramp.value = ramp.target;
+		ramp.ramp = 0.0f;
+	} else {
+		//find normal to the plane containing value and target:
+		glm::vec3 norm = glm::cross(ramp.value, ramp.target);
+		if (norm == glm::vec3(0.0f)) {
+			if (ramp.target.x <= ramp.target.y && ramp.target.x <= ramp.target.z) {
+				norm = glm::vec3(1.0f, 0.0f, 0.0f);
+			} else if (ramp.target.y <= ramp.target.z) {
+				norm = glm::vec3(0.0f, 1.0f, 0.0f);
+			} else {
+				norm = glm::vec3(0.0f, 0.0f, 1.0f);
+			}
+			norm -= ramp.target * glm::dot(ramp.target, norm);
+		}
+		norm = glm::normalize(norm);
+		//find perpendicular to target in this plane:
+		glm::vec3 perp = glm::cross(norm, ramp.target);
+
+		//find angle from target to value:
+		float angle = std::acos(glm::clamp(glm::dot(ramp.value, ramp.target), -1.0f, 1.0f));
+
+		//figure out new target value by moving angle toward target:
+		angle *= (ramp.ramp - RAMP_STEP) / ramp.ramp;
+
+		ramp.value = ramp.target * std::cos(angle) + perp * std::sin(angle);
+		ramp.ramp -= RAMP_STEP;
+	}
+}
+
 
 //The audio callback -- invoked by SDL when it needs more sound to play:
 void mix_audio(void *, Uint8 *buffer_, int len) {
@@ -185,8 +333,16 @@ void mix_audio(void *, Uint8 *buffer_, int len) {
 
 	//update global values:
 	float start_volume = Sound::volume.value;
+	glm::vec3 start_position =  Sound::listener.position.value;
+	glm::vec3 start_right =  Sound::listener.right.value;
+
 	step_value_ramp(Sound::volume);
+	step_position_ramp( Sound::listener.position);
+	step_direction_ramp( Sound::listener.right);
+
 	float end_volume = Sound::volume.value;
+	glm::vec3 end_position =  Sound::listener.position.value;
+	glm::vec3 end_right =  Sound::listener.right.value;
 
 	//add audio from each playing sample into the buffer:
 	for (auto si = playing_samples.begin(); si != playing_samples.end(); /* later */) {
@@ -194,16 +350,41 @@ void mix_audio(void *, Uint8 *buffer_, int len) {
 
 		//Figure out sample panning/volume at start...
 		LR start_pan;
-		compute_pan_weights(playing_sample.pan.value, &start_pan.l, &start_pan.r);
+		if (!(playing_sample.pan.value == playing_sample.pan.value)) {
+			//3D panning
+			compute_pan_from_listener_and_position(
+				start_position, start_right,
+				playing_sample.position.value,
+				playing_sample.half_volume_radius.value,
+				&start_pan.l, &start_pan.r);
+
+			step_position_ramp(playing_sample.position);
+			step_value_ramp(playing_sample.half_volume_radius);
+		} else {
+			//2D panning
+			compute_pan_weights(playing_sample.pan.value, &start_pan.l, &start_pan.r);
+
+			step_value_ramp(playing_sample.pan);
+		}
 		start_pan.l *= start_volume * playing_sample.volume.value;
 		start_pan.r *= start_volume * playing_sample.volume.value;
 
-		step_value_ramp(playing_sample.pan);
 		step_value_ramp(playing_sample.volume);
 
 		//..and end of the mix period:
 		LR end_pan;
-		compute_pan_weights(playing_sample.pan.value, &end_pan.l, &end_pan.r);
+		if (!(playing_sample.pan.value == playing_sample.pan.value)) {
+			//3D panning
+			compute_pan_from_listener_and_position(
+				end_position, end_right,
+				playing_sample.position.value,
+				playing_sample.half_volume_radius.value,
+				&end_pan.l, &end_pan.r);
+		} else {
+			//2D panning
+			compute_pan_weights(playing_sample.pan.value, &end_pan.l, &end_pan.r);
+		}
+
 		end_pan.l *= end_volume * playing_sample.volume.value;
 		end_pan.r *= end_volume * playing_sample.volume.value;
 
@@ -224,7 +405,7 @@ void mix_audio(void *, Uint8 *buffer_, int len) {
 			playing_sample.i += 1;
 			if (playing_sample.i == playing_sample.data.size()) {
 				if (playing_sample.loop) {
-					i = 0;
+					playing_sample.i = 0;
 				} else {
 					break;
 				}

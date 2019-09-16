@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include <memory>
 #include <vector>
 #include <string>
@@ -51,7 +53,12 @@ struct PlayingSample {
 	//change the panning or volume of a playing sample (and do proper locking);
 	// value will change over 'ramp' seconds to avoid creating audible artifacts:
 	void set_volume(float new_volume, float ramp = 1.0f / 60.0f);
+	//set the panning of a sample (use only on samples in "2D" mode; no effect on "3D" samples):
 	void set_pan(float new_pan, float ramp = 1.0f / 60.0f);
+	//set the position of a sample (use only on samples in "3D" mode; no effect on "2D" samples):
+	void set_position(glm::vec3 const &new_position, float ramp = 1.0f / 60.0f);
+	//set the half-volume radius (use only on "3D" playing sounds):
+	void set_half_volume_radius(float new_radius, float ramp = 1.0f / 60.0f);
 
 	//'stop' will fade sample out over 'ramp' seconds and then remove it from the active samples:
 	void stop(float ramp = 1.0f / 60.0f);
@@ -65,10 +72,18 @@ struct PlayingSample {
 	bool stopped = false; //was playback stopped (either by running out of sample, or by stop())?
 
 	Ramp< float > volume = Ramp< float >(1.0f);
-	Ramp< float > pan = Ramp< float >(0.0f);
+
+	//2D playback panning control: ('NaN' if sound played in 3D mode)
+	Ramp< float > pan = Ramp< float >(std::numeric_limits< float >::quiet_NaN());
+
+	//3D playback panning control: ('NaN' if sound played in 2D mode)
+	Ramp< glm::vec3 > position = Ramp< glm::vec3 >(std::numeric_limits< float >::quiet_NaN());
+	Ramp< float > half_volume_radius = std::numeric_limits< float >::quiet_NaN();
 
 	PlayingSample(Sample const &sample_, float volume_, float pan_, bool loop_)
 		: data(sample_.data), loop(loop_), volume(volume_), pan(pan_) { }
+	PlayingSample(Sample const &sample_, float volume_, glm::vec3 const &position_, float half_volume_radius_, bool loop_)
+		: data(sample_.data), loop(loop_), volume(volume_), position(position_), half_volume_radius(half_volume_radius_) { }
 };
 
 // ------- global functions -------
@@ -84,6 +99,13 @@ std::shared_ptr< PlayingSample > play(
 	float volume = 1.0f,
 	float pan = 0.0f //-1.0f == hard left, 1.0f == hard right
 );
+//The play_3D version will play a sample in '3D' mode (that is, panning determined by listener position):
+std::shared_ptr< PlayingSample > play_3D(
+	Sample const &sample,
+	float volume,
+	glm::vec3 const &position,
+	float half_volume_radius = std::numeric_limits< float >::infinity()
+);
 
 //Call 'Sound::loop' to play a sample ~forever~.
 //  if you hang on to the return value, you can change the panning, volume, or stop playback.
@@ -92,6 +114,24 @@ std::shared_ptr< PlayingSample > loop(
 	float volume = 1.0f,
 	float pan = 0.0f //-1.0f == hard left, 1.0f == hard right
 );
+//The loop_3D version will loop a sample in '3D' mode (that is, panning determined by listener position):
+std::shared_ptr< PlayingSample > loop_3D(
+	Sample const &sample,
+	float volume,
+	glm::vec3 const &position,
+	float half_volume_radius = std::numeric_limits< float >::infinity()
+);
+
+//Listener controls the panning of "3D" samples (ones played using the "position" version of the play functions):
+struct Listener {
+	void set_position(glm::vec3 const &new_position, float ramp = 1.0f / 60.0f);
+	void set_right(glm::vec3 const &new_right, float ramp = 1.0f / 60.0f);
+
+	//internals:
+	Ramp< glm::vec3 > position = Ramp< glm::vec3 >(0.0f); //listener's location
+	Ramp< glm::vec3 > right = Ramp< glm::vec3 >(1.0f, 0.0f, 0.0f); //unit vector pointing to listener's right
+};
+extern struct Listener listener;
 
 //"panic button" to shut off all currently playing sounds:
 void stop_all_samples();

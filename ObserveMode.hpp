@@ -2,6 +2,7 @@
 
 #include "Mode.hpp"
 #include "Scene.hpp"
+#include "Sound.hpp"
 
 struct ObserveMode : Mode {
 	ObserveMode();
@@ -12,4 +13,7 @@ struct ObserveMode : Mode {
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 
 	Scene::Camera const *current_camera = nullptr;
+
+	std::shared_ptr< Sound::PlayingSample > noise_loop;
+	float noise_angle = 0.0f;
 };

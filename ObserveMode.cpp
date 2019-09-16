@@ -5,8 +5,13 @@
 #include "Sprite.hpp"
 #include "DrawSprites.hpp"
 #include "data_path.hpp"
+#include "Sound.hpp"
 
 #include <iostream>
+
+Load< Sound::Sample > noise(LoadTagDefault, []() -> Sound::Sample const * {
+	return new Sound::Sample(data_path("cold-dunes.opus"));
+});
 
 Load< SpriteAtlas > trade_font_atlas(LoadTagDefault, []() -> SpriteAtlas const * {
 	return new SpriteAtlas(data_path("trade-font"));
@@ -39,9 +44,12 @@ ObserveMode::ObserveMode() {
 	assert(scene->cameras.size() && "Observe requires cameras.");
 
 	current_camera = &scene->cameras.front();
+
+	noise_loop = Sound::loop_3D(*noise, 1.0f, glm::vec3(0.0f, 0.0f, 0.0f), 10.0f);
 }
 
 ObserveMode::~ObserveMode() {
+	noise_loop->stop();
 }
 
 bool ObserveMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
@@ -68,7 +76,21 @@ bool ObserveMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_si
 }
 
 void ObserveMode::update(float elapsed) {
-	//nothing to update
+	noise_angle = std::fmod(noise_angle + elapsed, 2.0f * 3.1415926f);
+
+	//update sound position:
+	glm::vec3 center = glm::vec3(10.0f, 4.0f, 1.0f);
+	float radius = 10.0f;
+	noise_loop->set_position(center + radius * glm::vec3( std::cos(noise_angle), std::sin(noise_angle), 0.0f));
+
+	//update listener position:
+	glm::mat4 frame = current_camera->transform->make_local_to_world();
+
+	//using the sound lock here because I want to update position and right-direction *simultaneously* for the audio code:
+	Sound::lock();
+	Sound::listener.set_position(frame[3]);
+	Sound::listener.set_right(frame[0]);
+	Sound::unlock();
 }
 
 void ObserveMode::draw(glm::uvec2 const &drawable_size) {
