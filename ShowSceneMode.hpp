@@ -9,7 +9,7 @@
 
 #include "Mode.hpp"
 #include "Scene.hpp"
-#include "MeshBuffer.hpp"
+#include "Mesh.hpp"
 
 struct ShowSceneMode : Mode {
 	ShowSceneMode(Scene const &scene);

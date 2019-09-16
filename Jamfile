@@ -173,7 +173,7 @@ COMMON_NAMES =
 	DrawLines
 	ColorProgram
 	Scene
-	MeshBuffer
+	Mesh
 	load_save_png
 	gl_compile_program
 	Mode

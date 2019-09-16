@@ -1,7 +1,7 @@
 #include "ObserveMode.hpp"
 #include "DrawLines.hpp"
 #include "LitColorTextureProgram.hpp"
-#include "MeshBuffer.hpp"
+#include "Mesh.hpp"
 #include "Sprite.hpp"
 #include "DrawSprites.hpp"
 #include "data_path.hpp"

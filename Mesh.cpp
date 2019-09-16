@@ -1,4 +1,4 @@
-#include "MeshBuffer.hpp"
+#include "Mesh.hpp"
 #include "read_write_chunk.hpp"
 
 #include <glm/glm.hpp>
@@ -98,7 +98,7 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 	*/
 }
 
-const MeshBuffer::Mesh &MeshBuffer::lookup(std::string const &name) const {
+const Mesh &MeshBuffer::lookup(std::string const &name) const {
 	auto f = meshes.find(name);
 	if (f == meshes.end()) {
 		throw std::runtime_error("Looking up mesh '" + name + "' that doesn't exist.");

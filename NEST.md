@@ -19,7 +19,7 @@ Here is a quick overview of what is included. For further information, ☺read t
     - ```Load.*pp``` deferred resource loading.
     - ```data_path.*pp``` get paths relative to the game's directory.
     - ```read_write_chunk.hpp``` simple helper to load/save data arrays.
-	- ```MeshBuffer.*pp``` system for loading vertex buffers and looking up meshes in them. (Similar to SpriteAtlas, but for 3D objects.)
+	- ```Mesh.*pp``` system for loading vertex buffers (`MeshBuffer`s) and looking up meshes in them. (Bascially, ```Sprite.hpp``` for 3D objects.)
     - ```Sprite.*pp``` runtime component of a sprite asset pipeline.
     - ```DrawSprites.*pp``` helper for drawing `Sprite`s from the same `SpriteAtlas`. **New:** `draw_text` included. **New:** pixel-perfect alignment mode included.
     - ```Mode.hpp``` base class for modes (things that recieve events and draw).

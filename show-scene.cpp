@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 			scene = new Scene();
 			scene->load(scene_file, [&buffer,&buffer_vao](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
 				if (!buffer_vao) return;
-				MeshBuffer::Mesh const &mesh = buffer->lookup(mesh_name);
+				Mesh const &mesh = buffer->lookup(mesh_name);
 
 				scene.drawables.emplace_back(transform);
 				Scene::Drawable &drawable = scene.drawables.back();
