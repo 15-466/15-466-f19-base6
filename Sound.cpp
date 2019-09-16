@@ -164,14 +164,14 @@ void Sound::PlayingSample::set_pan(float new_pan, float ramp) {
 }
 
 void Sound::PlayingSample::set_position(glm::vec3 const &new_position, float ramp) {
-	if ((pan.value == pan.value)) return; //ignore if not in '3D' mode
+	if (pan.value == pan.value) return; //ignore if not in '3D' mode
 	Sound::lock();
 	position.set(new_position, ramp);
 	Sound::unlock();
 }
 
 void Sound::PlayingSample::set_half_volume_radius(float new_radius, float ramp) {
-	if ((pan.value == pan.value)) return; //ignore if not in '3D' mode
+	if (pan.value == pan.value) return; //ignore if not in '3D' mode
 	Sound::lock();
 	half_volume_radius.set(new_radius, ramp);
 	Sound::unlock();

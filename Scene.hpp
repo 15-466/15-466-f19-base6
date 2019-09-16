@@ -20,6 +20,8 @@
 #include <list>
 #include <memory>
 #include <functional>
+#include <string>
+#include <vector>
 
 struct Scene {
 	struct Transform {
