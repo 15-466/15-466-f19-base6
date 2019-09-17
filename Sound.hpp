@@ -69,6 +69,7 @@ struct PlayingSample {
 	std::vector< float > const &data; //reference to sample data being played
 	uint32_t i = 0; //next data value to read
 	bool loop = false; //should playback loop after data runs out?
+	bool stopping = false; //is playing stopping?
 	bool stopped = false; //was playback stopped (either by running out of sample, or by stop())?
 
 	Ramp< float > volume = Ramp< float >(1.0f);

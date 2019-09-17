@@ -152,7 +152,9 @@ void Sound::set_volume(float new_volume, float ramp) {
 
 void Sound::PlayingSample::set_volume(float new_volume, float ramp) {
 	Sound::lock();
-	volume.set(new_volume, ramp);
+	if (!stopping) {
+		volume.set(new_volume, ramp);
+	}
 	Sound::unlock();
 }
 
@@ -179,8 +181,8 @@ void Sound::PlayingSample::set_half_volume_radius(float new_radius, float ramp) 
 
 void Sound::PlayingSample::stop(float ramp) {
 	Sound::lock();
-	if (!stopped) {
-		stopped = true;
+	if (!(stopping || stopped)) {
+		stopping = true;
 		volume.target = 0.0f;
 		volume.ramp = ramp;
 	} else {
@@ -416,7 +418,8 @@ void mix_audio(void *, Uint8 *buffer_, int len) {
 			pan.r += pan_step.r;
 		}
 
-		if (playing_sample.i >= playing_sample.data.size()) { //sample has finished
+		if (playing_sample.i >= playing_sample.data.size()
+		 || (playing_sample.stopping && playing_sample.volume.value == 0.0f)) { //sample has finished
 		 	playing_sample.stopped = true;
 			//erase from list:
 			auto old = si;
