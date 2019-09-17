@@ -24,6 +24,8 @@ if $(OS) = NT { #Windows
 	MakeLocate README-SDL.txt : dist ;
 	File SDL2.dll : $(NEST_LIBS)\\SDL2\\dist\\SDL2.dll ;
 	MakeLocate SDL2.dll : dist ;
+	File <other>SDL2.dll : $(NEST_LIBS)\\SDL2\\dist\\SDL2.dll ;
+	MakeLocate <other>SDL2.dll : scenes ;
 
 	#glm:
 	C++FLAGS += /I"$(NEST_LIBS)/glm/include" ;

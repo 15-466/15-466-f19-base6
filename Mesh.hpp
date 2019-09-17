@@ -13,6 +13,7 @@
 #include <glm/glm.hpp>
 #include <map>
 #include <limits>
+#include <string>
 
 
 struct Mesh {
