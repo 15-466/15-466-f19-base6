@@ -178,7 +178,7 @@ def write_objects(from_collection):
 		else:
 			print('Skipping ' + obj.type)
 	for child in from_collection.children:
-		add_meshes(child)
+		write_objects(child)
 
 write_objects(collection)
 
