@@ -140,7 +140,7 @@ def write_lamp(obj):
 	lamp_data += write_xfh(obj) #hierarchy reference
 	if obj.data.type == 'POINT':
 		lamp_data += b"p"
-	elif obj.data.type == 'HEMI':
+	elif obj.data.type == 'SUN' and obj.data.type.angle > 179.0 / 3.1416926:
 		lamp_data += b"h"
 	elif obj.data.type == 'SPOT':
 		lamp_data += b"s"
