@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
 	//create window:
 	SDL_Window *window = SDL_CreateWindow(
-		"gp19 neighborhood watch", //TODO: remember to set a title for your game!
+		"gp19 Sphere Roller", //TODO: remember to set a title for your game!
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		800, 540, //TODO: modify window size if you'd like
 		SDL_WINDOW_OPENGL

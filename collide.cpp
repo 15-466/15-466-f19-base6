@@ -1,6 +1,7 @@
 #include "collide.hpp"
 
 #include <initializer_list>
+#include <algorithm>
 #include <iostream>
 
 

@@ -12,6 +12,7 @@
 //for glm::pow(quaternion, float):
 #include <glm/gtx/quaternion.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 Load< SpriteAtlas > trade_font_atlas(LoadTagDefault, []() -> SpriteAtlas const * {
