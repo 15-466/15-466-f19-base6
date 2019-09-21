@@ -87,6 +87,12 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		std::cerr << "WARNING: trailing data in mesh file '" << filename << "'" << std::endl;
 	}
 
+	//store positions for collision detection use:
+	positions.reserve(data.size());
+	for (auto const &v : data) {
+		positions.emplace_back(v.Position);
+	}
+
 	/* //DEBUG:
 	std::cout << "File '" << filename << "' contained meshes";
 	for (auto const &m : meshes) {

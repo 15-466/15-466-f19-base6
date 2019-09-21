@@ -156,6 +156,9 @@ if $(OS) = NT { #Windows
 
 #Store the names of all the .cpp files to build into a variable:
 GAME_NAMES =
+	collide
+	RollLevel
+	RollMode
 	Sound
 	load_wav
 	load_opus
@@ -164,7 +167,6 @@ GAME_NAMES =
 	LitColorTextureProgram
 	Sprite
 	MenuMode
-	ObserveMode
 	main
 	data_path
 	;
@@ -211,7 +213,7 @@ Objects
 	;
 
 LOCATE_TARGET = dist ; #put main in 'dist' directory
-MainFromObjects watch : $(GAME_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
+MainFromObjects roll : $(GAME_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
 
 LOCATE_TARGET = sprites ; #put pack-sprites utility in the 'sprites' directory:
 MainFromObjects pack-sprites : $(PACK_SPRITES_NAMES:S=$(SUFOBJ)) load_save_png$(SUFOBJ) ;

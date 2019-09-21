@@ -2,7 +2,7 @@
 #include "Mode.hpp"
 
 //Starting mode:
-#include "ObserveMode.hpp"
+#include "RollMode.hpp"
 
 //Deal with calling resource loading functions:
 #include "Load.hpp"
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< ObserveMode >());
+	Mode::set_current(std::make_shared< RollMode >(roll_levels->front()));
 
 	//------------ main loop ------------
 

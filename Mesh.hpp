@@ -14,6 +14,7 @@
 #include <map>
 #include <limits>
 #include <string>
+#include <vector>
 
 
 struct Mesh {
@@ -67,4 +68,7 @@ struct MeshBuffer {
 	Attrib Normal;
 	Attrib Color;
 	Attrib TexCoord;
+
+	//local copy of vertex information: (for collision detection)
+	std::vector< glm::vec3 > positions;
 };
