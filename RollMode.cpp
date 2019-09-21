@@ -89,8 +89,12 @@ void RollMode::update(float elapsed) {
 		glm::vec3 &position = level.player.transform->position;
 		glm::vec3 &velocity = level.player.velocity;
 
-		//decay existing velocity toward shove:
-		velocity = glm::mix(shove, velocity, std::pow(0.5f, elapsed / 0.25f));
+		velocity = glm::vec3(
+			//decay existing velocity toward shove:
+			glm::mix(glm::vec2(shove), glm::vec2(velocity), std::pow(0.5f, elapsed / 0.25f)),
+			//also: gravity
+			velocity.z - 10.0f * elapsed
+		);
 		
 		//collide against level:
 		float remain = elapsed;
@@ -133,7 +137,8 @@ void RollMode::update(float elapsed) {
 			} else {
 				position = glm::mix(from, to, t);
 				float d = glm::dot(velocity, collision_out);
-				if (d < 0.0f) velocity -= 1.5f * d * collision_out;
+				if (d < 0.0f) velocity -= (1.5f * d) * collision_out;
+				std::cout << collision_out.x << ", " << collision_out.y << ", " << collision_out.z << " / " << velocity.x << ", " << velocity.y << ", " << velocity.z << std::endl; //DEBUG
 				remain = (1.0f - t) * remain;
 			}
 		}

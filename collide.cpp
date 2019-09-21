@@ -79,6 +79,37 @@ bool collide_swept_sphere_vs_box(
 	glm::vec3 const &box_center, glm::vec3 const &box_radius,
 	float *collision_t, glm::vec3 *collision_at, glm::vec3 *collision_out
 ) {
+	auto dis = [&box_center,&box_radius](glm::vec3 const &pt) {
+		glm::vec3 close = glm::max(box_center-box_radius, glm::min(box_center + box_radius, pt));
+		return glm::length(pt - close);
+	};
+	auto out = [&box_center,&box_radius](glm::vec3 const &pt) {
+		glm::vec3 close = glm::max(box_center-box_radius, glm::min(box_center + box_radius, pt));
+		return glm::normalize(pt - close);
+	};
+
+
+	float t0 = 0.0f;
+	float t1 = 1.0f;
+	if (collision_t) t1 = std::min(t1, *collision_t);
+
+	if (t1 <= t0) return false;
+
+	float d0 = dis(sphere_from);
+
+	if (d0 < sphere_radius) {
+		glm::vec3 o0 = out(sphere_from);
+		if (glm::dot(sphere_to - sphere_from, o0) < 0.0f) {
+			if (collision_t) *collision_t = t0;
+			if (collision_out) *collision_out = o0;
+			if (collision_at) *collision_at = sphere_from - o0 * sphere_radius;
+			return true;
+		}
+	}
+
+	return false;
+
+#if 0
 	{ //early-out box vs box check:
 		glm::vec3 sphere_min = glm::min(sphere_from, sphere_to) - glm::vec3(sphere_radius);
 		glm::vec3 sphere_max = glm::max(sphere_from, sphere_to) - glm::vec3(sphere_radius);
@@ -113,6 +144,7 @@ bool collide_swept_sphere_vs_box(
 	//TODO: edges, sides.
 
 	return collided;
+#endif
 }
 
 
