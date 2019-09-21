@@ -24,6 +24,8 @@ struct RollLevel : Scene {
 	//    (and thus might be changed)
 	//  -- needs to be careful to fixup pointers.
 	RollLevel(RollLevel const &);
+	// copy constructor actually just uses this = operator:
+	RollLevel &operator=(RollLevel const &);
 
 	
 	//Solid parts of level are tracked as MeshColliders:
@@ -44,7 +46,7 @@ struct RollLevel : Scene {
 	//Sphere being rolled tracked using this structure:
 	struct Player {
 		Scene::Transform *transform = nullptr;
-		glm::quat rotational_velocity = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::vec3 rotational_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		float view_azimuth = 0.0f;

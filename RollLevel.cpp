@@ -107,6 +107,9 @@ RollLevel::RollLevel(std::string const &scene_file) {
 }
 
 RollLevel::RollLevel(RollLevel const &other) {
+	*this = other;
+}
+RollLevel &RollLevel::operator=(RollLevel const &other) {
 	//copy other's transforms, and remember the mapping between them and the copies:
 	std::unordered_map< Transform const *, Transform * > transform_to_transform;
 	//null transform maps to itself:
@@ -165,5 +168,7 @@ RollLevel::RollLevel(RollLevel const &other) {
 
 	player = other.player;
 	player.transform = transform_to_transform.at(player.transform);
+
+	return *this;
 }
 

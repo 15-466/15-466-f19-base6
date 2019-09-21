@@ -80,108 +80,64 @@ bool collide_ray_vs_cylinder(
 	glm::vec3 const &cylinder_a, glm::vec3 const &cylinder_b, float cylinder_radius,
 	float *collision_t, glm::vec3 *collision_at, glm::vec3 *collision_out) {
 
-	glm::vec3 along = cylinder_b - cylinder_a;
-	if (along == glm::vec3(0.0f)) return false;
+	//Can decompose a ray vs cylinder-wall test into a ray-vs-sphere test
+	// on a shorter time range:
 
-	float a0, a1;
+	//Notably, want that point on ray lies between cylinder end-caps.
+	// in other words, 0 < dot(ray_start + ray_direction * t, along) < limit
+	glm::vec3 along = cylinder_b - cylinder_a;
+	float limit = glm::dot(along, along);
+	if (limit == 0.0f) return false;
+
+	//[a0,a1] will be the time range to check:
+	float a0 = 0.0f;
+	float a1 = 1.0f;
 	{ //determine time range [a0,a1] in which closest point to ray is between ends of cylinder:
 		float dot_start = glm::dot(ray_start - cylinder_a, along);
 		float dot_end = glm::dot(ray_start + ray_direction - cylinder_a, along);
-		float limit = glm::dot(along, along);
 
-		if (dot_start < dot_end) {
-			if (dot_start >= limit) {
-				if (dot_end >= limit) return false;
-				a0 = (limit - dot_start) / (dot_end - dot_start);
-			} else {
-				a0 = 0.0f;
-			}
-			if (dot_end <= 0.0f) {
-				if (dot_start <= 0.0f) return false;
-				a1 = (0.0f - dot_start) / (dot_end - dot_start);
-			} else {
-				a1 = 1.0f;
-			}
-		} else if (dot_start < dot_end) {
-			if (dot_start <= 0.0f) {
-				if (dot_end <= 0.0f) return false;
-				a0 = (0.0f - dot_start) / (dot_end - dot_start);
-			} else {
-				a0 = 0.0f;
-			}
-			if (dot_end >= limit) {
-				if (dot_start >= limit) return false;
-				a1 = (limit - dot_start) / (dot_end - dot_start);
-			} else {
-				a1 = 1.0f;
-			}
-		} else { //dot_start == dot_end
-			//start and end are both within cylinder, so consider entire time range:
-			if (dot_start <= 0.0f || dot_start >= limit) return false;
-			a0 = 0.0f;
-			a1 = 1.0f;
+		if (dot_start < 0.0f) {
+			if (dot_end <= dot_start) return false;
+			a0 = (0.0f - dot_start) / (dot_end - dot_start);
 		}
-		if (a0 >= a1) return false;
+		if (dot_start > limit) {
+			if (dot_end >= dot_start) return false;
+			a0 = (limit - dot_start) / (dot_end - dot_start);
+		}
+
+		if (dot_end < 0.0f) {
+			if (dot_start <= dot_end) return false;
+			a1 = (0.0f - dot_start) / (dot_end - dot_start);
+		}
+		if (dot_end > limit) {
+			if (dot_start >= dot_end) return false;
+			a1 = (limit - dot_start) / (dot_end - dot_start);
+		}
+
 	}
 
-	//closest point on cylinder_a -> cylinder_b to start of ray:
-	glm::vec3 close_start = ray_start + glm::dot(cylinder_a - ray_start, along) / glm::dot(along, along) * along;
+	//reduce range by previous collision time:
+	if (collision_t) a1 = std::min(a1, *collision_t);
+
+	//if range is empty, nothing to do:
+	if (a0 >= a1) return false;
+
+	//closest point on cylinder_a to start of ray:
+	glm::vec3 close_start = cylinder_a + glm::dot(ray_start - cylinder_a, along) / glm::dot(along, along) * along;
 
 	//change in closest point over time:
 	glm::vec3 close_direction = glm::dot(ray_direction, along) / glm::dot(along, along) * along;
 
-	//when is (ray_start + t * ray_direction - close_start - t * close_direction)^2 <= cylinder_radius^2 ?
-
-	// can solve a quadratic equation:
-	float a = glm::dot(ray_direction - close_direction, ray_direction - close_direction);
-	float b = 2.0f * glm::dot(ray_start - close_start, ray_direction - close_direction);
-	float c = glm::dot(ray_start - close_start, ray_start - close_start) - cylinder_radius*cylinder_radius;
-
-	//quick check: don't intersect if derivative is non-decreasing at t == 0:
-	if (b >= 0.0f) return false;
-
-
-	//this is the part of the quadratic formula under the radical:
-	float d = b*b - 4.0f * a * c;
-	if (d < 0.0f) return false;
-	d = std::sqrt(d);
-
-	//intersects between t0 and t1:
-	float t0 = (-b - d) / (2.0f * a);
-	float t1 = (-b + d) / (2.0f * a);
-
-
-	//DEBUG, shouldn't have nan's creep in here:
-	assert(t0 == t0);
-	assert(t1 == t1);
-
-	//if that doesn't happen during ray, no collision:
-	if (t1 <= 0.0f || t0 >= 1.0f) return false;
-
-	//restrict to the range where closest point is actually between start and end of cylinder:
-	t0 = std::max(t0, a0);
-	t1 = std::min(t1, a1);
-
-	//if that intersection is empty, no collision:
-	if (t0 >= t1) return false;
-
-	//DEBUG:
-	std::cout << t0 << " => " << glm::length(ray_start - close_start + t0 * (ray_direction - close_direction)) << " == " << cylinder_radius << std::endl;
-
-	//if existing collision is earlier, no collision:
-	if (collision_t && *collision_t <= t0) return false;
-
-	if (t0 <= 0.0f) {
-		//collides (or was already colliding) at start:
-		if (collision_t) *collision_t = 0.0f;
-		if (collision_at) *collision_at = ray_start;
-		if (collision_out) *collision_out = careful_normalize(ray_start - close_start);
-		return true;
-	} else {
-		//collides somewhere after start:
-		if (collision_t) *collision_t = t0;
-		if (collision_at) *collision_at = ray_start + ray_direction * t0;
-		if (collision_out) *collision_out = careful_normalize(ray_start - close_start + t0 * (ray_direction - close_direction));
+	//construct a ray vs (static) sphere test by viewing the problem relative to the close_start/close_direction sphere and over the [a0,a1] interval:
+	float t = a1 - a0;
+	if (collide_ray_vs_sphere(
+		(ray_start - close_start) + a0 * (ray_direction - close_direction), ray_direction - close_direction,
+		glm::vec3(0.0f), cylinder_radius,
+		&t, nullptr, nullptr)) {
+		t += a0;
+		if (collision_t) *collision_t = t;
+		if (collision_at) *collision_at = ray_start + t * ray_direction;
+		if (collision_out) *collision_out = careful_normalize(ray_start - close_start + t * (ray_direction - close_direction));
 		return true;
 	}
 
@@ -201,7 +157,7 @@ bool collide_swept_sphere_vs_triangle(
 		if (t <= 0.0f) return false;
 	}
 
-	if (false) { //check interior of triangle:
+	{ //check interior of triangle:
 		//vector perpendicular to plane:
 		glm::vec3 perp = glm::cross(triangle_b - triangle_a, triangle_c - triangle_a);
 		if (perp == glm::vec3(0.0f)) {
@@ -255,26 +211,33 @@ bool collide_swept_sphere_vs_triangle(
 	bool collided = false;
 
 	{ //edges
+		glm::vec3 out;
 		if (collide_ray_vs_cylinder(sphere_from, (sphere_to - sphere_from),
 			triangle_a, triangle_b, sphere_radius,
-			collision_t, collision_at, collision_out)) {
+			collision_t, collision_at, &out)) {
+			if (collision_at) *collision_at -= out * sphere_radius;
+			if (collision_out) *collision_out = out;
 			collided = true;
 		}
 
 		if (collide_ray_vs_cylinder(sphere_from, (sphere_to - sphere_from),
 			triangle_b, triangle_c, sphere_radius,
-			collision_t, collision_at, collision_out)) {
+			collision_t, collision_at, &out)) {
+			if (collision_at) *collision_at -= out * sphere_radius;
+			if (collision_out) *collision_out = out;
 			collided = true;
 		}
 
 		if (collide_ray_vs_cylinder(sphere_from, (sphere_to - sphere_from),
 			triangle_c, triangle_a, sphere_radius,
-			collision_t, collision_at, collision_out)) {
+			collision_t, collision_at, &out)) {
+			if (collision_at) *collision_at -= out * sphere_radius;
+			if (collision_out) *collision_out = out;
 			collided = true;
 		}
 	}
 
-	if (false) { //vertices:
+	{ //vertices:
 		if (collide_ray_vs_sphere(sphere_from, (sphere_to - sphere_from),
 			triangle_a, sphere_radius,
 			collision_t, nullptr, collision_out)) {

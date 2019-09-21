@@ -18,7 +18,9 @@ struct RollMode : Mode {
 	RollLevel const &start;
 
 	//The (active, being-played) level:
+	void restart();
 	RollLevel level;
+	bool won = false;
 
 	//Current control signals:
 	struct {
@@ -27,6 +29,11 @@ struct RollMode : Mode {
 		bool left = false;
 		bool right = false;
 	} controls;
+
+	//fly around for collsion debug:
+	bool DEBUG_fly = false;
+	bool DEBUG_show_geometry = false;
+	bool DEBUG_show_collision = false;
 
 	//some debug drawing done during update:
 	std::unique_ptr< DrawLines > DEBUG_draw_lines;
