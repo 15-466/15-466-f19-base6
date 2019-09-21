@@ -10,11 +10,8 @@
 Mesh const *mesh_Goal = nullptr;
 Mesh const *mesh_Sphere = nullptr;
 
-//maps box-collider meshes to boxes:
-std::unordered_map< Mesh const *, glm::vec3 > mesh_to_box;
-
-//names of mesh-collider meshes:
-std::unordered_set< Mesh const * > mesh_is_collider;
+//names of mesh-to-collider-mesh:
+std::unordered_map< Mesh const *, Mesh const * > mesh_to_collider;
 
 GLuint roll_meshes_for_lit_color_texture_program = 0;
 
@@ -29,14 +26,14 @@ Load< MeshBuffer > roll_meshes(LoadTagDefault, []() -> MeshBuffer * {
 	mesh_Goal = &ret->lookup("Goal");
 	mesh_Sphere = &ret->lookup("Sphere");
 	
-	//box-style colliders:
-	mesh_to_box[&ret->lookup("Block.Dark")] = glm::vec3(1.0f);
-	mesh_to_box[&ret->lookup("Block.Light")] = glm::vec3(1.0f);
+	//these meshes collide as (simpler) boxes:
+	mesh_to_collider.insert(std::make_pair(&ret->lookup("Block.Dark"), &ret->lookup("Block.Simple")));
+	mesh_to_collider.insert(std::make_pair(&ret->lookup("Block.Light"), &ret->lookup("Block.Simple")));
 
-	//mesh-style colliders:
-	mesh_is_collider.insert(&ret->lookup("Round.Quarter"));
-	mesh_is_collider.insert(&ret->lookup("Round.Corner"));
-	mesh_is_collider.insert(&ret->lookup("Round.Corner.Outer"));
+	//these meshes collide as themselves:
+	mesh_to_collider.insert(std::make_pair(&ret->lookup("Round.Quarter"), &ret->lookup("Round.Quarter")));
+	mesh_to_collider.insert(std::make_pair(&ret->lookup("Round.Corner"), &ret->lookup("Round.Corner")));
+	mesh_to_collider.insert(std::make_pair(&ret->lookup("Round.Corner.Outer"), &ret->lookup("Round.Corner.Outer")));
 
 	return ret;
 });
@@ -54,8 +51,10 @@ Load< std::list< RollLevel > > roll_levels(LoadTagLate, []() -> std::list< RollL
 //-------- RollLevel ---------
 
 RollLevel::RollLevel(std::string const &scene_file) {
+	uint32_t decorations = 0;
+
 	//Load scene (using Scene::load function), building proper associations as needed:
-	load(scene_file, [this,scene_file](Scene &, Transform *transform, std::string const &mesh_name){
+	load(scene_file, [this,&scene_file,&decorations](Scene &, Transform *transform, std::string const &mesh_name){
 		Mesh const *mesh = &roll_meshes->lookup(mesh_name);
 	
 		drawables.emplace_back(transform);
@@ -77,14 +76,14 @@ RollLevel::RollLevel(std::string const &scene_file) {
 			player.transform = transform;
 		} else if (mesh == mesh_Goal) {
 			goals.emplace_back(transform);
-		} else if (mesh_to_box.count(mesh)) {
-			auto f = mesh_to_box.find(mesh);
-			assert(f != mesh_to_box.end());
-			box_colliders.emplace_back(transform, f->second);
-		} else if (mesh_is_collider.count(mesh)) {
-			mesh_colliders.emplace_back(transform, *mesh, *roll_meshes);
 		} else {
-			//just decoration, I guess?
+			auto f = mesh_to_collider.find(mesh);
+			if (f != mesh_to_collider.end()) {
+				mesh_colliders.emplace_back(transform, *f->second, *roll_meshes);
+			} else {
+				//just decoration.
+				++decorations;
+			}
 		}
 	});
 
@@ -93,9 +92,9 @@ RollLevel::RollLevel(std::string const &scene_file) {
 	}
 
 	std::cout << "Level '" << scene_file << "' has "
-		<< box_colliders.size() << " box colliders, "
 		<< mesh_colliders.size() << " mesh colliders, "
-		<< " and " << goals.size() << " goals."
+		<< goals.size() << " goals "
+		<< "and " << decorations << " decorations."
 		<< std::endl;
 	
 	//Create player camera:
@@ -154,11 +153,6 @@ RollLevel::RollLevel(RollLevel const &other) {
 	}
 
 	//---- level-specific stuff ----
-	box_colliders = other.box_colliders;
-	for (auto &c : box_colliders) {
-		c.transform = transform_to_transform.at(c.transform);
-	}
-
 	mesh_colliders = other.mesh_colliders;
 	for (auto &c : mesh_colliders) {
 		c.transform = transform_to_transform.at(c.transform);

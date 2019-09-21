@@ -2,6 +2,9 @@
 
 #include "Mode.hpp"
 #include "RollLevel.hpp"
+#include "DrawLines.hpp"
+
+#include <memory>
 
 struct RollMode : Mode {
 	RollMode(RollLevel const &level);
@@ -24,4 +27,7 @@ struct RollMode : Mode {
 		bool left = false;
 		bool right = false;
 	} controls;
+
+	//some debug drawing done during update:
+	std::unique_ptr< DrawLines > DEBUG_draw_lines;
 };

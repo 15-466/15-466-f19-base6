@@ -26,13 +26,7 @@ struct RollLevel : Scene {
 	RollLevel(RollLevel const &);
 
 	
-	//Solid parts of level are tracked using these collider structures:
-	struct BoxCollider {
-		BoxCollider(Scene::Transform *transform_, glm::vec3 const &radius_) : transform(transform_), radius(radius_) { }
-		Scene::Transform *transform;
-		glm::vec3 radius;
-	};
-
+	//Solid parts of level are tracked as MeshColliders:
 	struct MeshCollider {
 		MeshCollider(Scene::Transform *transform_, Mesh const &mesh_, MeshBuffer const &buffer_) : transform(transform_), mesh(&mesh_), buffer(&buffer_) { }
 		Scene::Transform *transform;
@@ -58,7 +52,6 @@ struct RollLevel : Scene {
 	};
 
 	//Additional information for things in the level:
-	std::vector< BoxCollider > box_colliders;
 	std::vector< MeshCollider > mesh_colliders;
 	std::vector< Goal > goals;
 	Player player;
