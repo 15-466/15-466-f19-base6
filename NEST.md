@@ -9,11 +9,13 @@ Here is a quick overview of what is included. For further information, ☺read t
 - Base code (files you will certainly edit):
     - ```main.cpp``` creates the game window and contains the main loop. Set your window title, size, and initial Mode here.
     - ```MenuMode.*pp``` declaration+definition for a sprite-based menu, with text drawing and menu movement sounds.
-    - **New:** ```ObserveMode.*pp``` mode that makes use of a Scene, switching between cameras in that scene.
-    - ```Sound.*pp``` a basic game audio system. **New:** sounds can loop. **New:** sounds can have 3D positions.
+    - **New:** ```RollLevel.*pp``` code that wraps a scene and adds custom behaviors to some objects.
+    - **New:** ```RollMode.*pp``` mode that makes use of a Scene, including collision detection.
+    - ```Sound.*pp``` a basic game audio system. Sounds can loop and have 3D positions.
     - ```Jamfile``` responsible for telling FTJam how to build the project. Change this when you add additional .cpp files and to change your runtime executable's name.
     - ```.gitignore``` ignores generated files. You will need to change it if your executable name changes. (If you find yourself changing it to ignore, e.g., your editor's swap files you should probably, instead be investigating making this change in the global git configuration.)
 - Useful code (files you should investigate, but probably won't change):
+	- **New:** ```collide.*pp``` collision helper functions.
     - ```load_wav.*pp``` load audio data from wav files.
     - ```load_opus.*pp``` load audio data from opus files.
     - ```Load.*pp``` deferred resource loading.
@@ -21,15 +23,15 @@ Here is a quick overview of what is included. For further information, ☺read t
     - ```read_write_chunk.hpp``` simple helper to load/save data arrays.
 	- ```Mesh.*pp``` system for loading vertex buffers (`MeshBuffer`s) and looking up meshes in them. (Bascially, ```Sprite.hpp``` for 3D objects.)
     - ```Sprite.*pp``` runtime component of a sprite asset pipeline.
-    - ```DrawSprites.*pp``` helper for drawing `Sprite`s from the same `SpriteAtlas`. **New:** `draw_text` included. **New:** pixel-perfect alignment mode included.
+    - ```DrawSprites.*pp``` helper for drawing `Sprite`s from the same `SpriteAtlas`. Can also `draw_text` included. Pixel-perfect alignment mode included.
     - ```Mode.hpp``` base class for modes (things that recieve events and draw).
-    - **New:** ```LitColorTextureProgram.hpp``` ColorTextureProgram with hemisphere lighting.
-	- **New:** ```DrawLines.*pp``` helper for drawing lines (and line-based text). Intended to be used mostly for debug visualization.
-    - **New:** ```ColorProgram.hpp``` ColorTextureProgram without texture. (Used for DrawLines.)
-	- **New:** ```ShowMeshesMode.*pp```, ```ShowMeshesProgram.*pp```, ```show-meshes.cpp``` utility for viewing mesh files; might also be interesting to read for camera controls.
-	- **New:** ```ShowSceneMode.*pp```, ```ShowSceneProgram.*pp```, ```show-scene.cpp``` utility for viewing scene files.
-	- **New:** ```scenes/export-meshes.py``` python code to export meshes from Blender 2.8
-	- **New:** ```scenes/export-scene.py``` python code to export scenes from Blender 2.8
+    - ```LitColorTextureProgram.hpp``` ColorTextureProgram with hemisphere lighting.
+	- ```DrawLines.*pp``` helper for drawing lines (and line-based text). Intended to be used mostly for debug visualization.
+    - ```ColorProgram.hpp``` ColorTextureProgram without texture. (Used for DrawLines.)
+	- ```ShowMeshesMode.*pp```, ```ShowMeshesProgram.*pp```, ```show-meshes.cpp``` utility for viewing mesh files; might also be interesting to read for camera controls.
+	- ```ShowSceneMode.*pp```, ```ShowSceneProgram.*pp```, ```show-scene.cpp``` utility for viewing scene files.
+	- ```scenes/export-meshes.py``` python code to export meshes from Blender 2.8
+	- ```scenes/export-scene.py``` python code to export scenes from Blender 2.8
     - ```ColorTextureProgram.hpp``` example OpenGL shader program, wrapped in a helper class.
     - ```gl_compile_program.hpp``` helper function to compiles OpenGL shader programs.
     - ```load_save_png.hpp``` helper functions to load and save PNG images.
@@ -37,7 +39,7 @@ Here is a quick overview of what is included. For further information, ☺read t
     - ```gl_errors.hpp``` provides a ```GL_ERRORS()``` macro.
 	- ```pack-sprites.cpp```, ```sprites/extract-sprites.py``` utilities used in the sprite asset pipeline. See [the README](sprites/README.md).
 - Here be dragons (files you probably don't need to look at):
-	- **New:** ```PathFont.*pp```, ```PathFont-font.*```, ```make-PathFont-font.py``` system for line-based fonts encoded into header files (so they can be used without loading data from disk). Mostly intended for debugging. You don't need to edit or run this.
+	- ```PathFont.*pp```, ```PathFont-font.*```, ```make-PathFont-font.py``` system for line-based fonts encoded into header files (so they can be used without loading data from disk). Mostly intended for debugging. You don't need to edit or run this.
     - ```make-GL.py``` does what it says on the tin. Included in case you are curious. You won't need to run it.
 	- ```glcorearb.h``` used by ```make-GL.py``` to produce ```GL.*pp```
 - Removed Files (you can find them in earlier base codes):
