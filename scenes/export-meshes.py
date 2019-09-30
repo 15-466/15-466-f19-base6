@@ -63,6 +63,8 @@ add_meshes(collection)
 #set all collections visible: (so that meshes can be selected for triangulation)
 def set_visible(layer_collection):
 	layer_collection.exclude = False
+	layer_collection.hide_viewport = False
+	layer_collection.collection.hide_viewport = False
 	for child in layer_collection.children:
 		set_visible(child)
 
@@ -88,14 +90,16 @@ for obj in bpy.data.objects:
 	name = mesh.name
 
 	print("Writing '" + name + "'...")
-	if bpy.context.mode == 'EDIT':
-		bpy.ops.object.mode_set(mode='OBJECT') #get out of edit mode (just in case)
+
+	bpy.ops.object.mode_set(mode='OBJECT') #get out of edit mode (just in case)
 
 	#select the object and make it the active object:
 	bpy.ops.object.select_all(action='DESELECT')
 	obj.select_set(True)
 	bpy.context.view_layer.objects.active = obj
+	bpy.ops.object.mode_set(mode='OBJECT')
 
+	print(obj.visible_get()) #DEBUG
 	#apply all modifiers (?):
 	bpy.ops.object.convert(target='MESH')
 

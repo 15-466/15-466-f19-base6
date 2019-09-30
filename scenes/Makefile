@@ -1,24 +1,31 @@
 
-BLENDER=../../blender-2.80-linux-glibc217-x86_64/blender
+
+OS := $(shell uname)
+
+ifeq ($(OS), Linux)
+	BLENDER=../../blender-2.80-linux-glibc217-x86_64/blender
+else
+	BLENDER=/Applications/Blender.app/Contents/MacOS/Blender
+endif
 
 all : \
-	../dist/roll-parts.pnct \
-	../dist/roll-level-1.scene \
-	../dist/roll-level-2.scene \
-	../dist/roll-level-3.scene \
+	../dist/pool.pnct \
+	../dist/pool.scene \
 
 
-../dist/roll-parts.pnct : sphere-roller.blend export-meshes.py
-	$(BLENDER) --background --python export-meshes.py -- sphere-roller.blend:Parts '$@'
+../dist/pool.pnct : pool.blend export-meshes.py
+	$(BLENDER) --background --python export-meshes.py -- 'pool.blend:Collection 1' '$@'
 
-../dist/roll-level-1.scene : sphere-roller.blend export-scene.py
-	$(BLENDER) --background --python export-scene.py -- sphere-roller.blend:Level.1 '$@'
+../dist/pool.scene : pool.blend export-scene.py
+	$(BLENDER) --background --python export-scene.py -- 'pool.blend:Collection 1' '$@'
 
-../dist/roll-level-2.scene : sphere-roller.blend export-scene.py
-	$(BLENDER) --background --python export-scene.py -- sphere-roller.blend:Level.2 '$@'
 
-../dist/roll-level-3.scene : sphere-roller.blend export-scene.py
-	$(BLENDER) --background --python export-scene.py -- sphere-roller.blend:Level.3 '$@'
+#../dist/roll-parts.pnct : sphere-roller.blend export-meshes.py
+#	$(BLENDER) --background --python export-meshes.py -- sphere-roller.blend:Parts '$@'
+
+#../dist/roll-level-1.scene : sphere-roller.blend export-scene.py
+#	$(BLENDER) --background --python export-scene.py -- sphere-roller.blend:Level.1 '$@'
+
 
 #../dist/city.scene : city.blend export-scene.py
 #	$(BLENDER) --background --python export-scene.py -- city.blend:Scene '$@'
