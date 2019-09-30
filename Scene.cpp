@@ -294,3 +294,51 @@ void Scene::load(std::string const &filename,
 }
 
 //-------------------------
+
+Scene::Scene(std::string const &filename, std::function< void(Scene &, Transform *, std::string const &) > const &on_drawable) {
+	load(filenae, on_drawable);
+}
+
+Scene::Scene(Scene const &other) {
+	//copy other's transforms, and remember the mapping between them and the copies:
+	std::unordered_map< Transform const *, Transform * > transform_to_transform;
+	//null transform maps to itself:
+	transform_to_transform.insert(std::make_pair(nullptr, nullptr));
+
+	//Copy transforms and store mapping:
+	for (auto const &t : other.transforms) {
+		transforms.emplace_back();
+		transforms.back().name = t.name;
+		transforms.back().position = t.position;
+		transforms.back().rotation = t.rotation;
+		transforms.back().scale = t.scale;
+		transforms.back().parent = t.parent; //will update later
+
+		//store mapping between transforms old and new:
+		auto ret = transform_to_transform.insert(std::make_pair(&t, &transforms.back()));
+		assert(ret.second);
+	}
+
+	//update transform parents:
+	for (auto &t : transforms) {
+		t.parent = transform_to_transform.at(t.parent);
+	}
+
+	//copy other's drawables, updating transform pointers:
+	drawables = other.drawables;
+	for (auto &d : drawables) {
+		d.transform = transform_to_transform.at(d.transform);
+	}
+
+	//copy other's cameras, updating transform pointers:
+	cameras = other.cameras;
+	for (auto const &c : cameras) {
+		c.transform = transform_to_transform.at(c.transform);
+	}
+
+	//copy other's lamps, updating transform pointers:
+	lamps = other.lamps;
+	for (auto &l : lamps) {
+		l.transform = transform_to_transform.at(l.transform);
+	}
+}

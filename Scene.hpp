@@ -133,4 +133,13 @@ struct Scene {
 	void load(std::string const &filename,
 		std::function< void(Scene &, Transform *, std::string const &) > const &on_drawable = nullptr
 	);
+
+	//empty scene:
+	Scene() = default;
+
+	//load a scene:
+	Scene(std::string const &filename, std::function< void(Scene &, Transform *, std::string const &) > const &on_drawable);
+
+	//copy a scene (with proper pointer fixup):
+	Scene(Scene const &);
 };
