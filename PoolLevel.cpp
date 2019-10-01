@@ -81,13 +81,13 @@ PoolLevel &PoolLevel::operator=(PoolLevel const &other) {
 	return *this;
 }
 
-PoolLevel::Dozer *PoolLevel::add_dozer(std::string const &name, Dozer::Team const &team) {
+PoolLevel::Dozer *PoolLevel::add_dozer(std::string const &name, Team const &team) {
 	//Add drawable to the scene:
 	transforms.emplace_back();
 	drawables.emplace_back(&transforms.back());
 	drawables.back().pipeline = lit_color_texture_program_pipeline;
 	drawables.back().pipeline.vao = pool_meshes_for_lit_color_texture_program;
-	Mesh const *mesh = (team == Dozer::TeamSolid ? mesh_DozerSolid : mesh_DozerDiamond);
+	Mesh const *mesh = (team == TeamSolid ? mesh_DozerSolid : mesh_DozerDiamond);
 	drawables.back().pipeline.type = mesh->type;
 	drawables.back().pipeline.start = mesh->start;
 	drawables.back().pipeline.count = mesh->count;
@@ -127,7 +127,7 @@ void PoolLevel::remove_dozer(Dozer *dozer) {
 
 PoolLevel::Dozer *PoolLevel::spawn_dozer(std::string const &name) {
 	//TODO: balance teams
-	Dozer::Team team = Dozer::TeamDiamond;
+	Team team = TeamDiamond;
 
 	Dozer *dozer = add_dozer(name, team);
 	//TODO: rejection sample center area of level
@@ -175,15 +175,16 @@ void PoolLevel::update(float elapsed) {
 
 	//push everything so that it no longer intersects:
 
-	auto push_apart = [](glm::vec3 &a, glm::vec3 &b, float radius, float mix = 0.5f) {
+	auto push_apart = [](glm::vec3 &a, glm::vec3 &b, float radius, float mix = 0.5f) -> bool {
 		glm::vec2 ab = glm::vec2(b) - glm::vec2(a);
 		float len2 = glm::dot(ab, ab);
-		if (len2 >= radius*radius) return;
-		if (len2 == 0.0f) return;
+		if (len2 >= radius*radius) return false;
+		if (len2 == 0.0f) return false;
 		float len = std::sqrt(len2);
 		ab /= std::sqrt(len);
 		a -= glm::vec3((1.0f - mix) * (radius - len) * ab, 0.0f);
 		b += glm::vec3(mix * (radius - len) * ab, 0.0f);
+		return true;
 	};
 
 	auto keep_in_level = [this](glm::vec3 &a, float radius) {
@@ -191,6 +192,7 @@ void PoolLevel::update(float elapsed) {
 		a.y = std::min(level_max.y - radius, std::max(level_min.y + radius, a.y));
 	};
 
+	//keep dozers from overlapping:
 	for (uint32_t iter = 0; iter < 10; ++iter) {
 		for (auto &a : dozers) {
 			for (auto &b : dozers) {
@@ -200,6 +202,7 @@ void PoolLevel::update(float elapsed) {
 			keep_in_level(a.transform->position, 0.15f);
 		}
 	}
+
 	std::vector< glm::vec3 > old_positions;
 	old_positions.reserve(balls.size());
 	for (auto &b : balls) {
@@ -207,12 +210,16 @@ void PoolLevel::update(float elapsed) {
 	}
 	for (uint32_t iter = 0; iter < 10; ++iter) {
 		for (auto &b : balls) {
+			if (b.scored != 0.0f) continue; //scored balls don't participate in pushes
 			for (auto &b2 : balls) {
 				if (&b == &b2) break;
+				if (b2.scored != 0.0f) continue; //scored balls don't participate in pushes
 				push_apart(b.transform->position,b2.transform->position,0.3f);
 			}
 			for (auto &a : dozers) {
-				push_apart(a.transform->position,b.transform->position,0.3f, 1.0f);
+				if (push_apart(a.transform->position,b.transform->position,0.3f, 0.9f)) {
+					b.last_to_touch = a.team;
+				}
 			}
 			keep_in_level(b.transform->position, 0.15f);
 		}
@@ -227,6 +234,20 @@ void PoolLevel::update(float elapsed) {
 				* b.transform->rotation
 			);
 		}
+		//scoring:
+		if (b.scored == 0.0f) {
+			for (auto const &g : goals) {
+				float len = glm::length(g - glm::vec2(b.transform->position));
+				if (len < 0.4f) {
+					b.scored = 0.001f;
+					//TODO: points assignment
+				}
+			}
+		} else {
+			b.scored = std::min(b.scored + elapsed / 0.7f, 1.0f);
+		}
+		b.transform->scale = glm::vec3(1.0f - b.scored);
+
 		++opi;
 	}
 	assert(opi == old_positions.end());

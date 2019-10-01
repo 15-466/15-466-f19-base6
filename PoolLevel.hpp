@@ -33,8 +33,18 @@ struct PoolLevel : Scene {
 	glm::vec2 level_max = glm::vec2( 3.0f,  2.0f);
 	std::vector< glm::vec2 > goals;
 
+	enum Team : char {
+		TeamNone = '\0',
+		TeamSolid = 's',
+		TeamDiamond = 'd'
+	};
+
+
 	struct Ball {
 		Scene::Transform *transform = nullptr;
+		float scored = 0.0f; //score amount (used to scale down and remove from physics)
+		Team last_to_touch = TeamNone;
+
 		uint32_t index = -1U; //1..15
 		bool is_solid() const { return index < 8; }
 		bool is_diamond() const { return index > 8; }
@@ -47,10 +57,7 @@ struct PoolLevel : Scene {
 		std::string name = "player";
 		float left_tread = 0.0f;
 		float right_tread = 0.0f;
-		enum Team : char {
-			TeamSolid = 's',
-			TeamDiamond = 'd'
-		} team = TeamSolid;
+		Team team = TeamSolid;
 
 		struct Controls {
 			bool left_forward = false;
@@ -62,7 +69,7 @@ struct PoolLevel : Scene {
 	std::list< Dozer > dozers;
 
 	//add/remove dozers from the list (creating/removing transforms+drawables):
-	Dozer *add_dozer(std::string const &name, Dozer::Team const &team);
+	Dozer *add_dozer(std::string const &name, Team const &team);
 	void remove_dozer(Dozer *dozer);
 
 	//helper to spawn a dozer at a random unoccupied location:
