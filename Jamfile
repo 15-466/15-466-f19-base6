@@ -171,6 +171,20 @@ GAME_NAMES =
 	data_path
 	;
 
+CLIENT_NAMES =
+	ClientMode
+	Connection
+	Sound
+	load_wav
+	load_opus
+	DrawSprites
+	ColorTextureProgram
+	LitColorTextureProgram
+	Sprite
+	client
+	data_path
+	;
+
 COMMON_NAMES =
 	PathFont
 	PathFont-font
@@ -206,6 +220,7 @@ PACK_SPRITES_NAMES =
 LOCATE_TARGET = objs ; #put objects in 'objs' directory
 Objects
 	$(GAME_NAMES:S=.cpp)
+	$(CLIENT_NAMES:S=.cpp)
 	$(COMMON_NAMES:S=.cpp)
 	$(SHOW_MESHES_NAMES:S=.cpp)
 	$(SHOW_SCENE_NAMES:S=.cpp)
@@ -214,6 +229,9 @@ Objects
 
 LOCATE_TARGET = dist ; #put main in 'dist' directory
 MainFromObjects roll : $(GAME_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
+
+LOCATE_TARGET = dist ; #put main in 'dist' directory
+MainFromObjects client : $(CLIENT_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
 
 LOCATE_TARGET = sprites ; #put pack-sprites utility in the 'sprites' directory:
 MainFromObjects pack-sprites : $(PACK_SPRITES_NAMES:S=$(SUFOBJ)) load_save_png$(SUFOBJ) ;
