@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 	SDL_Window *window = SDL_CreateWindow(
 		"gp19 Pool Dozers", //TODO: remember to set a title for your game!
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		800, 540, //TODO: modify window size if you'd like
+		960, 600, //TODO: modify window size if you'd like
 		SDL_WINDOW_OPENGL
 		| SDL_WINDOW_RESIZABLE //uncomment to allow resizing
 		| SDL_WINDOW_ALLOW_HIGHDPI //uncomment for full resolution on high-DPI screens
@@ -101,9 +101,10 @@ int main(int argc, char **argv) {
 	//------------ create game mode + make current --------------
 	if (argc > 1) {
 		if (argc != 2) {
-			std::cerr << "Usage:\n\t" << argv[0] << " [server] [port]" << std::endl;
+			std::cerr << "Usage:\n\t" << argv[0] << " [port]" << std::endl;
+			return 1;
 		}
-		Mode::set_current(std::make_shared< PoolMode >(pool_levels->front()));
+		Mode::set_current(std::make_shared< PoolMode >(pool_levels->front(), argv[1]));
 	} else {
 		Mode::set_current(std::make_shared< PoolMode >(pool_levels->front()));
 	}

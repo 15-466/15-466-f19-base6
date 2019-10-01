@@ -20,7 +20,10 @@ Load< SpriteAtlas > trade_font_atlas(LoadTagDefault, []() -> SpriteAtlas const *
 });
 
 
-PoolMode::PoolMode(PoolLevel const &start_) : start(start_) {
+PoolMode::PoolMode(PoolLevel const &start_, std::string const &port) : start(start_) {
+	if (port != "") {
+		server.reset(new Server(port));
+	}
 	restart();
 }
 
@@ -29,7 +32,17 @@ PoolMode::~PoolMode() {
 
 void PoolMode::restart() {
 	level = start;
-	dozer = level.spawn_dozer("Player");
+
+	//spawn remote players:
+	if (server) {
+		for (auto &ci : connection_infos) {
+			ci.second.dozer = level.spawn_dozer(ci.second.name);
+		}
+	}
+
+	//spawn a local player:
+	dozer = level.spawn_dozer("Local");
+
 	if (level.cameras.empty()) {
 		throw std::runtime_error("Level is missing a camera.");
 	}
@@ -37,19 +50,21 @@ void PoolMode::restart() {
 }
 
 bool PoolMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
-	if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP) {
-		if (evt.key.keysym.scancode == SDL_SCANCODE_W) {
-			dozer->controls.left_forward = (evt.type == SDL_KEYDOWN);
-			return true;
-		} else if (evt.key.keysym.scancode == SDL_SCANCODE_S) {
-			dozer->controls.left_backward = (evt.type == SDL_KEYDOWN);
-			return true;
-		} else if (evt.key.keysym.scancode == SDL_SCANCODE_UP) {
-			dozer->controls.right_forward = (evt.type == SDL_KEYDOWN);
-			return true;
-		} else if (evt.key.keysym.scancode == SDL_SCANCODE_DOWN) {
-			dozer->controls.right_backward = (evt.type == SDL_KEYDOWN);
-			return true;
+	if (dozer) {
+		if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP) {
+			if (evt.key.keysym.scancode == SDL_SCANCODE_W) {
+				dozer->controls.left_forward = (evt.type == SDL_KEYDOWN);
+				return true;
+			} else if (evt.key.keysym.scancode == SDL_SCANCODE_S) {
+				dozer->controls.left_backward = (evt.type == SDL_KEYDOWN);
+				return true;
+			} else if (evt.key.keysym.scancode == SDL_SCANCODE_UP) {
+				dozer->controls.right_forward = (evt.type == SDL_KEYDOWN);
+				return true;
+			} else if (evt.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+				dozer->controls.right_backward = (evt.type == SDL_KEYDOWN);
+				return true;
+			}
 		}
 	}
 
@@ -57,6 +72,55 @@ bool PoolMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PoolMode::update(float elapsed) {
+	//read from remote players:
+	if (server) {
+		auto remove_player = [this](Connection *c) {
+			auto f = connection_infos.find(c);
+			if (f != connection_infos.end()) {
+				level.remove_dozer(f->second.dozer);
+				connection_infos.erase(f);
+			}
+		};
+		server->poll([this,&remove_player](Connection *c, Connection::Event evt) {
+			if (evt == Connection::OnOpen) {
+				auto &info = connection_infos[c];
+				info.name = "[" + std::to_string(c->socket) + "]";
+				info.dozer = level.spawn_dozer(info.name);
+			} else if (evt == Connection::OnClose) {
+				remove_player(c);
+			} else if (evt == Connection::OnRecv) {
+				auto &info = connection_infos[c];
+				//update controls:
+				while (c->recv_buffer.size() >= 4) {
+					uint8_t type = c->recv_buffer[0];
+					uint32_t length = uint32_t(c->recv_buffer[1]) << 16 | uint32_t(c->recv_buffer[2]) << 8 | uint32_t(c->recv_buffer[3]);
+					if (type == 'C') {
+						if (length != 1) {
+							//invalid length for a control message:
+							remove_player(c);
+							c->close();
+							return;
+						} else if (c->recv_buffer.size() < 4 + length) {
+							//need more data
+							break;
+						} else {
+							//got a whole controls message:
+							uint8_t controls = c->recv_buffer[5];
+							//erase from buffer:
+							c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 4 + length);
+							//set controls using message:
+							info.dozer->controls.left_forward = (controls & 1);
+							info.dozer->controls.left_backward = (controls & 2);
+							info.dozer->controls.right_forward = (controls & 3);
+							info.dozer->controls.right_backward = (controls & 4);
+						}
+					}
+				}
+			}
+		}, 0.0);
+	}
+	
+
 	level.update(elapsed);
 }
 

@@ -3,11 +3,12 @@
 #include "Mode.hpp"
 #include "PoolLevel.hpp"
 #include "Scene.hpp"
+#include "Connection.hpp"
 
 #include <memory>
 
 struct PoolMode : Mode {
-	PoolMode(PoolLevel const &level);
+	PoolMode(PoolLevel const &level, std::string const &server_port = "");
 	virtual ~PoolMode();
 
 	virtual bool handle_event(SDL_Event const &, glm::uvec2 const &window_size) override;
@@ -24,6 +25,16 @@ struct PoolMode : Mode {
 	PoolLevel level;
 
 	//Access to level:
-	PoolLevel::Dozer *dozer = nullptr;
 	Scene::Camera *camera = nullptr;
+
+	//local player:
+	PoolLevel::Dozer *dozer = nullptr;
+
+	//remote players:
+	std::unique_ptr< Server > server;
+	struct PlayerInfo {
+		std::string name;
+		PoolLevel::Dozer *dozer = nullptr;
+	};
+	std::unordered_map< Connection const *, PlayerInfo > connection_infos;
 };
