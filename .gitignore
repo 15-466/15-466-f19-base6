@@ -10,6 +10,10 @@ dist/roll
 dist/roll.exe
 dist/roll.ilk
 dist/roll.pdb
+dist/client
+dist/client.exe
+dist/client.ilk
+dist/client.pdb
 sprites/pack-sprites
 sprites/pack-sprites.exe
 sprites/pack-sprites.ilk
