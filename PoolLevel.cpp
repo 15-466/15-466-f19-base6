@@ -3,6 +3,7 @@
 #include "LitColorTextureProgram.hpp"
 #include "data_path.hpp"
 
+#include <random>
 #include <iostream>
 
 GLuint pool_meshes_for_lit_color_texture_program = 0;
@@ -126,12 +127,53 @@ void PoolLevel::remove_dozer(Dozer *dozer) {
 }
 
 PoolLevel::Dozer *PoolLevel::spawn_dozer(std::string const &name) {
-	//TODO: balance teams
-	Team team = TeamDiamond;
+	//randomness source:
+	static std::mt19937 mt;
+
+	//balance teams:
+	uint32_t diamond = 0;
+	uint32_t solid = 0;
+	for (auto &d : dozers) {
+		if (d.team == TeamDiamond) {
+			++diamond;
+		} else {
+			++solid;
+		}
+	}
+
+	Team team;
+	if (diamond < solid) team = TeamDiamond;
+	if (solid < diamond) team = TeamSolid;
+	else team = (mt() > mt.max()/2 ? TeamDiamond : TeamSolid);
 
 	Dozer *dozer = add_dozer(name, team);
-	//TODO: rejection sample center area of level
-	dozer->transform->position = glm::vec3(0.0f);
+
+	//rejection sample center area of level:
+	for (uint32_t iter = 0; iter < 100; ++iter) {
+		dozer->transform->position = glm::vec3(
+			glm::mix(level_min.x+0.3f, level_max.x-0.3f, mt() / float(mt.max())),
+			glm::mix(level_min.y+0.3f, level_max.y-0.3f, mt() / float(mt.max())),
+			0.0f);
+		bool reject = false;
+		for (auto &b : balls) {
+			if (b.scored != 0.0f) continue;
+			glm::vec2 to = glm::vec2(dozer->transform->position) - glm::vec2(b.transform->position);
+			if (glm::dot(to,to) < 0.3f*0.3f) {
+				reject = true;
+				break;
+			}
+		}
+		for (auto &d : dozers) {
+			if (&d == dozer) continue;
+			glm::vec2 to = glm::vec2(dozer->transform->position) - glm::vec2(d.transform->position);
+			if (glm::dot(to,to) < 0.3f*0.3f) {
+				reject = true;
+				break;
+			}
+		}
+		if (!reject) break;
+	}
+	dozer->transform->rotation = glm::angleAxis(mt() / float(mt.max()) * 2.0f * 3.1415926f, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	return dozer;
 }

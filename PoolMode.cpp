@@ -68,6 +68,11 @@ bool PoolMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 	}
 
+	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_BACKSPACE) {
+		restart();
+		return true;
+	}
+
 	return false;
 }
 
