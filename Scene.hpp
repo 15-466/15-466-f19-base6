@@ -22,6 +22,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 struct Scene {
 	struct Transform {

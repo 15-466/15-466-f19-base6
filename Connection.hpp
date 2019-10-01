@@ -9,9 +9,11 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
+#undef APIENTRY
 #include <winsock2.h>
 #include <ws2tcpip.h> //for getaddrinfo
 #undef max
+#undef min
 
 #pragma comment(lib, "Ws2_32.lib") //link against the winsock2 library
 
