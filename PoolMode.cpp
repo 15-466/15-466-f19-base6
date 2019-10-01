@@ -105,14 +105,14 @@ void PoolMode::update(float elapsed) {
 							break;
 						} else {
 							//got a whole controls message:
-							uint8_t controls = c->recv_buffer[5];
+							uint8_t controls = c->recv_buffer[4];
 							//erase from buffer:
 							c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 4 + length);
 							//set controls using message:
 							info.dozer->controls.left_forward = (controls & 1);
 							info.dozer->controls.left_backward = (controls & 2);
-							info.dozer->controls.right_forward = (controls & 3);
-							info.dozer->controls.right_backward = (controls & 4);
+							info.dozer->controls.right_forward = (controls & 4);
+							info.dozer->controls.right_backward = (controls & 8);
 						}
 					}
 				}
