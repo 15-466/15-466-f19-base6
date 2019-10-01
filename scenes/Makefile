@@ -14,10 +14,10 @@ all : \
 
 
 ../dist/pool.pnct : pool.blend export-meshes.py
-	$(BLENDER) --background --python export-meshes.py -- 'pool.blend:Collection 1' '$@'
+	$(BLENDER) --background --python export-meshes.py -- pool.blend '$@'
 
 ../dist/pool.scene : pool.blend export-scene.py
-	$(BLENDER) --background --python export-scene.py -- 'pool.blend:Collection 1' '$@'
+	$(BLENDER) --background --python export-scene.py -- 'pool.blend:Table 1' '$@'
 
 
 #../dist/roll-parts.pnct : sphere-roller.blend export-meshes.py

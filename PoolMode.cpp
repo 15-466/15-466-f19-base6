@@ -110,7 +110,7 @@ void PoolMode::draw(glm::uvec2 const &drawable_size) {
 		DrawSprites draw(*trade_font_atlas, glm::vec2(0,0), glm::vec2(320, 200), drawable_size, DrawSprites::AlignPixelPerfect);
 
 		{
-			std::string help_text = "wasd:move, mouse:camera, bksp: reset";
+			std::string help_text = "w/s + up/down:move";
 			glm::vec2 min, max;
 			draw.get_text_extents(help_text, glm::vec2(0.0f, 0.0f), 1.0f, &min, &max);
 			float x = std::round(160.0f - (0.5f * (max.x + min.x)));
@@ -118,37 +118,15 @@ void PoolMode::draw(glm::uvec2 const &drawable_size) {
 			draw.draw_text(help_text, glm::vec2(x, 2.0f), 1.0f, glm::u8vec4(0xff,0xff,0xff,0xff));
 		}
 
-		if (won) {
-			std::string text = "Finished!";
-			glm::vec2 min, max;
-			draw.get_text_extents(text, glm::vec2(0.0f, 0.0f), 2.0f, &min, &max);
-			float x = std::round(160.0f - (0.5f * (max.x + min.x)));
-			draw.draw_text(text, glm::vec2(x, 100.0f), 2.0f, glm::u8vec4(0x00,0x00,0x00,0xff));
-			draw.draw_text(text, glm::vec2(x, 101.0f), 2.0f, glm::u8vec4(0xff,0xff,0xff,0xff));
-		}
-		if (won) {
-			std::string text = "press enter for next";
-			glm::vec2 min, max;
-			draw.get_text_extents(text, glm::vec2(0.0f, 0.0f), 1.0f, &min, &max);
-			float x = std::round(160.0f - (0.5f * (max.x + min.x)));
-			draw.draw_text(text, glm::vec2(x, 91.0f), 1.0f, glm::u8vec4(0x00,0x00,0x00,0xff));
-			draw.draw_text(text, glm::vec2(x, 92.0f), 1.0f, glm::u8vec4(0xdd,0xdd,0xdd,0xff));
-		}
-
 	}
 
-	if (DEBUG_draw_lines) { //DEBUG drawing:
+	/*if (DEBUG_draw_lines) { //DEBUG drawing:
 		//adjust world-to-clip matrix to current camera:
 		DEBUG_draw_lines->world_to_clip = level.camera->make_projection() * level.camera->transform->make_world_to_local();
 		//delete object (draws in destructor):
 		DEBUG_draw_lines.reset();
-	}
+	}*/
 
 
 	GL_ERRORS();
-}
-
-void PoolMode::restart() {
-	level = start;
-	won = false;
 }

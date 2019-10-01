@@ -296,7 +296,7 @@ void Scene::load(std::string const &filename,
 //-------------------------
 
 Scene::Scene(std::string const &filename, std::function< void(Scene &, Transform *, std::string const &) > const &on_drawable) {
-	load(filenae, on_drawable);
+	load(filename, on_drawable);
 }
 
 Scene::Scene(Scene const &other) {
@@ -332,7 +332,7 @@ Scene::Scene(Scene const &other) {
 
 	//copy other's cameras, updating transform pointers:
 	cameras = other.cameras;
-	for (auto const &c : cameras) {
+	for (auto &c : cameras) {
 		c.transform = transform_to_transform.at(c.transform);
 	}
 

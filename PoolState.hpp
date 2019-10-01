@@ -14,7 +14,7 @@
 struct PoolState {
 	struct BallState {
 		uint32_t index = -1U;
-		glm::vec2 position = glm::vec2(0.0f);
+		glm::vec3 position = glm::vec3(0.0f);
 		glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		glm::vec2 velocity = glm::vec2(0.0f);
 		float respawn = 0.0f;
