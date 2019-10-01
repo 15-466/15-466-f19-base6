@@ -1,28 +1,29 @@
 #pragma once
 
 #include "Mode.hpp"
-#include "PoolState.hpp"
+#include "PoolLevel.hpp"
 #include "Scene.hpp"
 
 #include <memory>
 
 struct PoolMode : Mode {
-	PoolMode(std::string const &player_name);
+	PoolMode(PoolLevel const &level);
 	virtual ~PoolMode();
 
 	virtual bool handle_event(SDL_Event const &, glm::uvec2 const &window_size) override;
 	virtual void update(float elapsed) override;
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 
+	//helper: restart level
+	void restart();
+
+	//Game starting state:
+	PoolLevel const &start;
+
 	//Current game state:
-	PoolState state;
+	PoolLevel level;
 
-	//Current control signals:
-	PoolState::DozerControls controls;
-
-	//Current scene (used for display of game state):
-	Scene scene;
+	//Access to level:
+	PoolLevel::Dozer *dozer = nullptr;
 	Scene::Camera *camera = nullptr;
-	std::vector< Scene::Drawable * > balls;
-	std::vector< Scene::Drawable * > dozers;
 };

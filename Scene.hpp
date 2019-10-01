@@ -141,5 +141,8 @@ struct Scene {
 	Scene(std::string const &filename, std::function< void(Scene &, Transform *, std::string const &) > const &on_drawable);
 
 	//copy a scene (with proper pointer fixup):
-	Scene(Scene const &);
+	Scene(Scene const &); //...as a constructor
+	Scene &operator=(Scene const &); //...as scene = scene
+	//... as a set() function that optionally returns the transform->transform mapping:
+	void set(Scene const &, std::unordered_map< Transform const *, Transform * > *transform_map = nullptr);
 };

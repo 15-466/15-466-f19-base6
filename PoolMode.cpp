@@ -19,52 +19,36 @@ Load< SpriteAtlas > trade_font_atlas(LoadTagDefault, []() -> SpriteAtlas const *
 	return new SpriteAtlas(data_path("trade-font"));
 });
 
-GLuint pool_meshes_for_lit_color_texture_program = 0;
 
-//Load the meshes:
-Load< MeshBuffer > pool_meshes(LoadTagDefault, []() -> MeshBuffer * {
-	MeshBuffer *ret = new MeshBuffer(data_path("pool.pnct"));
-	return ret;
-});
-
-//Load the pool table scene:
-Load< Scene > pool_scene(LoadTagDefault, []() -> Scene * {
-	return new Scene(data_path("pool.scene"), [](Scene &scene, Scene::Transform *transform, std::string const &mesh_name){
-		Mesh const *mesh = &pool_meshes->lookup(mesh_name);
-	
-		scene.drawables.emplace_back(transform);
-		Scene::Drawable::Pipeline &pipeline = scene.drawables.back().pipeline;
-		
-		//set up drawable to draw mesh from buffer:
-		pipeline = lit_color_texture_program_pipeline;
-		pipeline.vao = pool_meshes_for_lit_color_texture_program;
-		pipeline.type = mesh->type;
-		pipeline.start = mesh->start;
-		pipeline.count = mesh->count;
-	});
-});
-
-
-PoolMode::PoolMode(std::string const &player_name) : scene(*pool_scene) {
-	
+PoolMode::PoolMode(PoolLevel const &start_) : start(start_) {
+	restart();
 }
 
 PoolMode::~PoolMode() {
 }
 
+void PoolMode::restart() {
+	level = start;
+	dozer = level.spawn_dozer("Player");
+	if (level.cameras.empty()) {
+		throw std::runtime_error("Level is missing a camera.");
+	}
+	camera = &*level.cameras.begin();
+}
+
 bool PoolMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP) {
 		if (evt.key.keysym.scancode == SDL_SCANCODE_W) {
-			controls.left_forward = (evt.type == SDL_KEYDOWN);
+			dozer->controls.left_forward = (evt.type == SDL_KEYDOWN);
 			return true;
 		} else if (evt.key.keysym.scancode == SDL_SCANCODE_S) {
-			controls.left_backward = (evt.type == SDL_KEYDOWN);
+			dozer->controls.left_backward = (evt.type == SDL_KEYDOWN);
 			return true;
 		} else if (evt.key.keysym.scancode == SDL_SCANCODE_UP) {
-			controls.right_forward = (evt.type == SDL_KEYDOWN);
+			dozer->controls.right_forward = (evt.type == SDL_KEYDOWN);
 			return true;
 		} else if (evt.key.keysym.scancode == SDL_SCANCODE_DOWN) {
-			controls.right_backward = (evt.type == SDL_KEYDOWN);
+			dozer->controls.right_backward = (evt.type == SDL_KEYDOWN);
 			return true;
 		}
 	}
@@ -73,25 +57,10 @@ bool PoolMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 }
 
 void PoolMode::update(float elapsed) {
+	level.update(elapsed);
 }
 
 void PoolMode::draw(glm::uvec2 const &drawable_size) {
-	//Sync scene with state:
-	{ //balls:
-		/*
-		while (balls.size() < state.balls.size()) {
-			scene.transforms.emplace_back();
-			scene.drawables.emplace_back(&scene.transforms.back());
-
-
-			balls.
-		}
-		*/
-	}
-	{ //dozers:
-		
-	}
-
 	//--- actual drawing ---
 	glClearColor(0.45f, 0.45f, 0.50f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -100,7 +69,7 @@ void PoolMode::draw(glm::uvec2 const &drawable_size) {
 	glDepthFunc(GL_LEQUAL);
 
 	camera->aspect = drawable_size.x / float(drawable_size.y);
-	scene.draw(*camera);
+	level.draw(*camera);
 
 	{ //help text overlay:
 		glDisable(GL_DEPTH_TEST);

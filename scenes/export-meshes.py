@@ -100,7 +100,8 @@ for obj in bpy.data.objects:
 	bpy.context.view_layer.objects.active = obj
 	bpy.ops.object.mode_set(mode='OBJECT')
 
-	print(obj.visible_get()) #DEBUG
+	#print(obj.visible_get()) #DEBUG
+
 	#apply all modifiers (?):
 	bpy.ops.object.convert(target='MESH')
 

@@ -300,8 +300,21 @@ Scene::Scene(std::string const &filename, std::function< void(Scene &, Transform
 }
 
 Scene::Scene(Scene const &other) {
-	//copy other's transforms, and remember the mapping between them and the copies:
-	std::unordered_map< Transform const *, Transform * > transform_to_transform;
+	set(other);
+}
+
+Scene &Scene::operator=(Scene const &other) {
+	set(other);
+	return *this;
+}
+
+void Scene::set(Scene const &other, std::unordered_map< Transform const *, Transform * > *transform_map_) {
+
+	std::unordered_map< Transform const *, Transform * > t2t_temp;
+	std::unordered_map< Transform const *, Transform * > &transform_to_transform = *(transform_map_ ? transform_map_ : &t2t_temp);
+
+	transform_to_transform.clear();
+
 	//null transform maps to itself:
 	transform_to_transform.insert(std::make_pair(nullptr, nullptr));
 

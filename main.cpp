@@ -101,11 +101,11 @@ int main(int argc, char **argv) {
 	//------------ create game mode + make current --------------
 	if (argc > 1) {
 		if (argc != 2) {
-			std::cerr << "Usage:\n\t" << argv[0] << " [name]" << std::endl;
+			std::cerr << "Usage:\n\t" << argv[0] << " [server] [port]" << std::endl;
 		}
-		Mode::set_current(std::make_shared< PoolMode >(argv[1]));
+		Mode::set_current(std::make_shared< PoolMode >(pool_levels->front()));
 	} else {
-		Mode::set_current(std::make_shared< PoolMode >("Nemo"));
+		Mode::set_current(std::make_shared< PoolMode >(pool_levels->front()));
 	}
 
 	//------------ main loop ------------
