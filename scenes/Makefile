@@ -10,10 +10,14 @@ endif
 
 all : \
 	../dist/plant.pnct \
+	../dist/plant.banims
 
 
 ../dist/plant.pnct : plant.blend export-meshes.py
 	$(BLENDER) --background --python export-meshes.py -- plant.blend '$@'
+
+../dist/plant.banims : plant.blend export-bone-animations.py
+	$(BLENDER) --background --python export-bone-animations.py -- '$<' 'Plant' '[0,30]Wind;[100,140]Walk' '$@'
 
 #../dist/pool.scene : pool.blend export-scene.py
 #	$(BLENDER) --background --python export-scene.py -- 'pool.blend:Table 1' '$@'

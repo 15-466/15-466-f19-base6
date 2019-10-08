@@ -49,10 +49,20 @@ elif obj.type == 'MESH':
 else:
 	print("Unknown object type '" + obj.type + "'")
 
-bpy.context.scene.layers = armature.layers
-armature.hide = False
+#set everything visible:
+def set_visible(layer_collection):
+	layer_collection.exclude = False
+	layer_collection.hide_viewport = False
+	layer_collection.collection.hide_viewport = False
+	for child in layer_collection.children:
+		set_visible(child)
+
+set_visible(bpy.context.view_layer.layer_collection)
+
+#bpy.context.scene.layers = armature.layers
+armature.hide_viewport = False
 for obj in objs:
-	obj.hide = False
+	obj.hide_viewport = False
 
 #-----------------------------
 #write out appropriate data:
@@ -120,9 +130,9 @@ def write_frame(pose, root_xf=mathutils.Matrix()):
 		if pose_bone.parent:
 			to_parent = pose_bone.parent.matrix.copy()
 			to_parent.invert()
-			local_to_parent = to_parent * pose_bone.matrix
+			local_to_parent = to_parent @ pose_bone.matrix
 		else:
-			local_to_parent = root_xf * pose_bone.matrix
+			local_to_parent = root_xf @ pose_bone.matrix
 
 		trs = local_to_parent.decompose()
 		frame_data += struct.pack('3f', trs[0].x, trs[0].y, trs[0].z)
@@ -143,14 +153,14 @@ def write_frame_range(name, first, last, relative='local'):
 		inv_matrix_first = armature.matrix_world.copy()
 		inv_matrix_first.invert()
 	elif relative == 'global':
-		bpy.context.scene.frame_set(first, 0.0) #note: second param is sub-frame
+		bpy.context.scene.frame_set(first, subframe=0.0) #note: second param is sub-frame
 		to_world = armature.matrix_world
 	else:
 		print("Don't understand root motion specifier '" + relative + "'; expecting local, first, or global")
 		exit(1)
 
 	for frame in range(first, last+1):
-		bpy.context.scene.frame_set(frame, 0.0) #note: second param is sub-frame
+		bpy.context.scene.frame_set(frame, subframe=0.0) #note: second param is sub-frame
 		if relative == 'first':
 			to_world = inv_matrix_first * armature.matrix_world
 		write_frame(armature.pose, root_xf=to_world)
@@ -232,18 +242,18 @@ def write_mesh(mesh, xf=mathutils.Matrix(), do_normal=True, do_color=True, do_uv
 			loop = mesh.loops[poly.loop_indices[i]]
 			vertex = mesh.vertices[loop.vertex_index]
 
-			position = xf * vertex.co
+			position = xf @ vertex.co
 			vertex_data += struct.pack('fff', *position)
 
 			if do_normal:
-				normal = itxf * loop.normal
+				normal = itxf @ loop.normal
 				normal.normalize()
 				vertex_data += struct.pack('fff', *normal)
 
 			if do_color:
 				if colors != None:
 					col = colors[poly.loop_indices[i]].color
-					vertex_data += struct.pack('BBBB', int(col.r * 255), int(col.g * 255), int(col.b * 255), 255)
+					vertex_data += struct.pack('BBBB', int(col[0] * 255), int(col[1] * 255), int(col[2] * 255), int(col[3] * 255))
 				else:
 					vertex_data += struct.pack('BBBB', 255, 255, 255, 255)
 
@@ -290,14 +300,15 @@ def write_mesh(mesh, xf=mathutils.Matrix(), do_normal=True, do_color=True, do_uv
 for obj in objs:
 	#Get a copy of the mesh in the rest pose:
 	armature.data.pose_position = 'REST'
-	bpy.context.scene.update()
-	mesh = obj.to_mesh(bpy.context.scene, True, 'RENDER')
+	bpy.context.view_layer.update()
+	#TODO: how to get 'RENDER' depsgraph?
+	mesh = obj.to_mesh(preserve_all_data_layers=True, depsgraph=bpy.context.evaluated_depsgraph_get())
 
 	#Triangulate the mesh:
 	# from: https://blender.stackexchange.com/questions/45698/triangulate-mesh-in-python
 	bm = bmesh.new()
 	bm.from_mesh(mesh)
-	bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method=3, ngon_method=1)
+	bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method='BEAUTY', ngon_method='BEAUTY')
 	bm.to_mesh(mesh)
 	bm.free()
 
@@ -306,7 +317,7 @@ for obj in objs:
 
 	obj_to_arm = armature.matrix_world.copy()
 	obj_to_arm.invert()
-	obj_to_arm = obj_to_arm * obj.matrix_world
+	obj_to_arm = obj_to_arm @ obj.matrix_world
 
 	write_mesh(mesh, xf=obj_to_arm)
 
