@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
 	//create window:
 	SDL_Window *window = SDL_CreateWindow(
-		"gp19 Pool Dozers", //TODO: remember to set a title for your game!
+		"gp19 Bone Animation", //TODO: remember to set a title for your game!
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		960, 600, //TODO: modify window size if you'd like
 		SDL_WINDOW_OPENGL

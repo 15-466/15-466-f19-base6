@@ -179,7 +179,7 @@ void PlantMode::update(float elapsed) {
 		if (forward) step += elapsed * 4.0f;
 		if (backward) step -= elapsed * 4.0f;
 		plant->transform->position.y += step;
-		plant_animations[2].position -= step / 1.88803f;
+		plant_animations[2].position += step / 1.88803f;
 		plant_animations[2].position -= std::floor(plant_animations[2].position);
 	}
 
