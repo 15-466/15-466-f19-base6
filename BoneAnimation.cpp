@@ -7,6 +7,7 @@
 
 #include <set>
 #include <fstream>
+#include <algorithm>
 
 BoneAnimation::BoneAnimation(std::string const &filename) {
 	std::cout << "Reading bone-based animation from '" << filename << "'." << std::endl;
@@ -48,7 +49,7 @@ BoneAnimation::BoneAnimation(std::string const &filename) {
 		throw std::runtime_error("frame bones is not divisible by bones");
 	}
 
-	uint32_t frames = frame_bones.size() / bones.size();
+	uint32_t frames = uint32_t(frame_bones.size() / bones.size());
 
 	{ //read actions (animations):
 		struct AnimationInfo {
@@ -118,7 +119,7 @@ BoneAnimation::BoneAnimation(std::string const &filename) {
 
 		//specify the (only) mesh:
 		mesh.start = 0;
-		mesh.count = data.size();
+		mesh.count = GLuint(data.size());
 
 		//store attributes for later vao creation:
 		Position = Attrib(buffer, 3, GL_FLOAT, Attrib::AsFloat, sizeof(Vertex), offsetof(Vertex, Position));
@@ -172,7 +173,7 @@ void BoneAnimationPlayer::set_uniform(GLint bones_mat4x3_array) const {
 	std::vector< glm::mat4x3 > bone_to_object(banims.bones.size()); //needed for hierarchy
 	std::vector< glm::mat4x3 > bones(banims.bones.size()); //actual uniforms
 
-	int32_t frame = std::floor((anim.end - 1 - anim.begin) * position + anim.begin);
+	int32_t frame = int32_t(std::floor((anim.end - 1 - anim.begin) * position + anim.begin));
 	if (frame < int32_t(anim.begin)) frame = anim.begin;
 	if (frame > int32_t(anim.end)-1) frame = int32_t(anim.end)-1;
 	BoneAnimation::PoseBone const *pose = banims.get_frame(frame);
@@ -198,5 +199,5 @@ void BoneAnimationPlayer::set_uniform(GLint bones_mat4x3_array) const {
 		}
 		bones[b] = bone_to_object[b] * glm::mat4(bone.inverse_bind_matrix);
 	}
-	glUniformMatrix4x3fv(bones_mat4x3_array, bones.size(), GL_FALSE, glm::value_ptr(bones[0]));
+	glUniformMatrix4x3fv(bones_mat4x3_array, GLsizei(bones.size()), GL_FALSE, glm::value_ptr(bones[0]));
 }
