@@ -10,7 +10,7 @@ endif
 
 all : \
 	../dist/plant.pnct \
-	../dist/plant.banims
+	../dist/plant.banims \
 
 
 ../dist/plant.pnct : plant.blend export-meshes.py
