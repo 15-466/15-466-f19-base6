@@ -1,3 +1,5 @@
+#pragma once
+
 /*
  * MenuMode is a game mode that implements a multiple-choice system.
  *

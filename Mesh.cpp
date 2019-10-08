@@ -39,10 +39,10 @@ MeshBuffer::MeshBuffer(std::string const &filename) {
 		total = GLuint(data.size()); //store total for later checks on index
 
 		//store attrib locations:
-		Position = Attrib(3, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, Position));
-		Normal = Attrib(3, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, Normal));
-		Color = Attrib(4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), offsetof(Vertex, Color));
-		TexCoord = Attrib(2, GL_FLOAT, GL_FALSE, sizeof(Vertex), offsetof(Vertex, TexCoord));
+		Position = Attrib(buffer, 3, GL_FLOAT, Attrib::AsFloat, sizeof(Vertex), offsetof(Vertex, Position));
+		Normal = Attrib(buffer, 3, GL_FLOAT, Attrib::AsFloat, sizeof(Vertex), offsetof(Vertex, Normal));
+		Color = Attrib(buffer, 4, GL_UNSIGNED_BYTE, Attrib::AsFloatFromFixedPoint, sizeof(Vertex), offsetof(Vertex, Color));
+		TexCoord = Attrib(buffer, 2, GL_FLOAT, Attrib::AsFloat, sizeof(Vertex), offsetof(Vertex, TexCoord));
 	} else {
 		throw std::runtime_error("Unknown file type '" + filename + "'");
 	}
@@ -113,44 +113,12 @@ const Mesh &MeshBuffer::lookup(std::string const &name) const {
 }
 
 GLuint MeshBuffer::make_vao_for_program(GLuint program) const {
-	//create a new vertex array object:
-	GLuint vao = 0;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	std::map< std::string, Attrib const * > attribs;
 
-	//Try to bind all attributes in this buffer:
-	std::set< GLuint > bound;
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	auto bind_attribute = [&](char const *name, MeshBuffer::Attrib const &attrib) {
-		if (attrib.size == 0) return; //don't bind empty attribs
-		GLint location = glGetAttribLocation(program, name);
-		if (location == -1) return; //can't bind missing attribs
-		glVertexAttribPointer(location, attrib.size, attrib.type, attrib.normalized, attrib.stride, (GLbyte *)0 + attrib.offset);
-		glEnableVertexAttribArray(location);
-		bound.insert(location);
-	};
-	bind_attribute("Position", Position);
-	bind_attribute("Normal", Normal);
-	bind_attribute("Color", Color);
-	bind_attribute("TexCoord", TexCoord);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	attribs["Position"] = &Position;
+	attribs["Normal"] = &Normal;
+	attribs["Color"] = &Color;
+	attribs["TexCoord"] = &TexCoord;
 
-	//Check that all active attributes were bound:
-	GLint active = 0;
-	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &active);
-	assert(active >= 0 && "Doesn't makes sense to have negative active attributes.");
-	for (GLuint i = 0; i < GLuint(active); ++i) {
-		GLchar name[100];
-		GLint size = 0;
-		GLenum type = 0;
-		glGetActiveAttrib(program, i, 100, NULL, &size, &type, name);
-		name[99] = '\0';
-		GLint location = glGetAttribLocation(program, name);
-		if (!bound.count(GLuint(location))) {
-			throw std::runtime_error("ERROR: active attribute '" + std::string(name) + "' in program is not bound.");
-		}
-	}
-
-	return vao;
+	return ::make_vao_for_program(attribs, program);
 }

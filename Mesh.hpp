@@ -9,7 +9,9 @@
  *
  */
 
+#include "make_vao_for_program.hpp"
 #include "GL.hpp"
+
 #include <glm/glm.hpp>
 #include <map>
 #include <limits>
@@ -51,19 +53,7 @@ struct MeshBuffer {
 	//used by the lookup() function:
 	std::map< std::string, Mesh > meshes;
 
-	//These 'Attrib' structures describe the location of various attributes within the buffer (in exactly format wanted by glVertexAttribPointer). They are set when the file is loaded and are used by the "make_vao_for_program" call:
-	struct Attrib {
-		GLint size = 0;
-		GLenum type = 0;
-		GLboolean normalized = GL_FALSE;
-		GLsizei stride = 0;
-		GLsizei offset = 0;
-
-		Attrib() = default;
-		Attrib(GLint size_, GLenum type_, GLboolean normalized_, GLsizei stride_, GLsizei offset_)
-		: size(size_), type(type_), normalized(normalized_), stride(stride_), offset(offset_) { }
-	};
-
+	//describe the format of the mesh:
 	Attrib Position;
 	Attrib Normal;
 	Attrib Color;

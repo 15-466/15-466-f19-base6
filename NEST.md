@@ -9,13 +9,12 @@ Here is a quick overview of what is included. For further information, ☺read t
 - Base code (files you will certainly edit):
     - ```main.cpp``` creates the game window and contains the main loop. Set your window title, size, and initial Mode here.
     - ```MenuMode.*pp``` declaration+definition for a sprite-based menu, with text drawing and menu movement sounds.
-    - **New:** ```RollLevel.*pp``` code that wraps a scene and adds custom behaviors to some objects.
-    - **New:** ```RollMode.*pp``` mode that makes use of a Scene, including collision detection.
     - ```Sound.*pp``` a basic game audio system. Sounds can loop and have 3D positions.
     - ```Jamfile``` responsible for telling FTJam how to build the project. Change this when you add additional .cpp files and to change your runtime executable's name.
     - ```.gitignore``` ignores generated files. You will need to change it if your executable name changes. (If you find yourself changing it to ignore, e.g., your editor's swap files you should probably, instead be investigating making this change in the global git configuration.)
 - Useful code (files you should investigate, but probably won't change):
-	- **New:** ```collide.*pp``` collision helper functions.
+	- **New:** ```Connection.*pp``` polling-based socket communications.
+	- ```collide.*pp``` collision helper functions.
     - ```load_wav.*pp``` load audio data from wav files.
     - ```load_opus.*pp``` load audio data from opus files.
     - ```Load.*pp``` deferred resource loading.

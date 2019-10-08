@@ -2,7 +2,7 @@
 #include "Mode.hpp"
 
 //Starting mode:
-#include "PoolMode.hpp"
+#include "PlantMode.hpp"
 
 //Deal with calling resource loading functions:
 #include "Load.hpp"
@@ -99,15 +99,7 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	if (argc > 1) {
-		if (argc != 2) {
-			std::cerr << "Usage:\n\t" << argv[0] << " [port]" << std::endl;
-			return 1;
-		}
-		Mode::set_current(std::make_shared< PoolMode >(pool_levels->front(), argv[1]));
-	} else {
-		Mode::set_current(std::make_shared< PoolMode >(pool_levels->front()));
-	}
+	Mode::set_current(std::make_shared< PlantMode >());
 
 	//------------ main loop ------------
 
