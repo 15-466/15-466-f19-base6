@@ -55,11 +55,28 @@ BoneLitColorTextureProgram::BoneLitColorTextureProgram() {
 		"out vec4 color;\n"
 		"out vec2 texCoord;\n"
 		"void main() {\n"
+//Considering (just) the Add/Mul counts:
+/*  Variation (1): mul = 4*(12+3) = 60,  add = 4*9 + 3*3 = 45
 		"	vec3 blended_Position = (\n"
-		"		BONES[BoneIndices.x] * Position * BoneWeights.x\n"
-		"		+ BONES[BoneIndices.y] * Position * BoneWeights.y\n"
-		"		+ BONES[BoneIndices.z] * Position * BoneWeights.z\n"
-		"		+ BONES[BoneIndices.w] * Position * BoneWeights.w\n"
+		"		(BONES[BoneIndices.x] * Position) * BoneWeights.x\n"
+		"		+ (BONES[BoneIndices.y] * Position) * BoneWeights.y\n"
+		"		+ (BONES[BoneIndices.z] * Position) * BoneWeights.z\n"
+		"		+ (BONES[BoneIndices.w] * Position) * BoneWeights.w\n"
+		"		);\n"
+*/
+/*  Variation (2): mul = 4*12 + 12 = 60,  add = 3*12 + 9 = 45
+		"	vec3 blended_Position = (\n"
+		"		(BONES[BoneIndices.x] * BoneWeights.x\n"
+		"		+ BONES[BoneIndices.y] * BoneWeights.y\n"
+		"		+ BONES[BoneIndices.z] * BoneWeights.z\n"
+		"		+ BONES[BoneIndices.w] * BoneWeights.w\n"
+		"		) * Position;\n"
+*/
+		"	vec3 blended_Position = (\n"
+		"		(BONES[BoneIndices.x] * Position) * BoneWeights.x\n"
+		"		+ (BONES[BoneIndices.y] * Position) * BoneWeights.y\n"
+		"		+ (BONES[BoneIndices.z] * Position) * BoneWeights.z\n"
+		"		+ (BONES[BoneIndices.w] * Position) * BoneWeights.w\n"
 		"		);\n"
 		"	vec3 blended_Normal = (\n"
 		"		mat3(BONES[BoneIndices.x]) * Normal * BoneWeights.x\n"
