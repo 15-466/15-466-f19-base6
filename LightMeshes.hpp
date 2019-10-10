@@ -10,9 +10,12 @@ struct LightMeshes {
 
 	//object with w=0 that -- thus -- covers whole scene:
 	Mesh everything;
+
+	//cube, radius-1:
+	Mesh cube;
 	//bounding sphere, radius-1:
 	Mesh sphere;
-	//unit-height, radius-1 cone:
+	//height-1, radius-2 cone, vertex at (0,0), extends along -z axis:
 	Mesh cone;
 
 	//build a vertex array object that links these meshes to a given program:

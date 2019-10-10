@@ -10,6 +10,38 @@ LightMeshes::LightMeshes() {
 		everything.type = GL_TRIANGLE_STRIP;
 		everything.start = GLuint(attribs.size());
 
+		attribs.emplace_back(-1.0f,-1.0f, 1.0f, 0.0f);
+		attribs.emplace_back(-1.0f,-1.0f,-1.0f, 0.0f);
+		attribs.emplace_back( 1.0f,-1.0f, 1.0f, 0.0f);
+		attribs.emplace_back( 1.0f,-1.0f,-1.0f, 0.0f);
+		attribs.emplace_back( 1.0f, 1.0f, 1.0f, 0.0f);
+		attribs.emplace_back( 1.0f, 1.0f,-1.0f, 0.0f);
+		attribs.emplace_back(-1.0f, 1.0f, 1.0f, 0.0f);
+		attribs.emplace_back(-1.0f, 1.0f,-1.0f, 0.0f);
+		attribs.emplace_back(-1.0f,-1.0f, 1.0f, 0.0f);
+		attribs.emplace_back(-1.0f,-1.0f,-1.0f, 0.0f);
+		
+		attribs.emplace_back(attribs.back());
+		attribs.emplace_back(-1.0f,-1.0f, 1.0f, 0.0f);
+		attribs.emplace_back(attribs.back());
+		attribs.emplace_back( 1.0f,-1.0f, 1.0f, 0.0f);
+		attribs.emplace_back(-1.0f, 1.0f, 1.0f, 0.0f);
+		attribs.emplace_back( 1.0f, 1.0f, 1.0f, 0.0f);
+
+		attribs.emplace_back(attribs.back());
+		attribs.emplace_back(-1.0f, 1.0f,-1.0f, 0.0f);
+		attribs.emplace_back(attribs.back());
+		attribs.emplace_back( 1.0f, 1.0f,-1.0f, 0.0f);
+		attribs.emplace_back(-1.0f,-1.0f,-1.0f, 0.0f);
+		attribs.emplace_back( 1.0f,-1.0f,-1.0f, 0.0f);
+
+		everything.count = GLuint(attribs.size() - everything.start);
+	}
+
+	{ //radius-1 cube:
+		cube.type = GL_TRIANGLE_STRIP;
+		cube.start = GLuint(attribs.size());
+
 		attribs.emplace_back(-1.0f,-1.0f, 1.0f, 1.0f);
 		attribs.emplace_back(-1.0f,-1.0f,-1.0f, 1.0f);
 		attribs.emplace_back( 1.0f,-1.0f, 1.0f, 1.0f);
@@ -36,11 +68,38 @@ LightMeshes::LightMeshes() {
 		attribs.emplace_back( 1.0f,-1.0f,-1.0f, 1.0f);
 
 
-		everything.count = GLuint(attribs.size() - everything.start);
+		cube.count = GLuint(attribs.size() - cube.start);
 	}
 
-	sphere = everything;
-	cone = everything;
+	//it's a very approximate sphere:
+	sphere = cube;
+
+	{ //radius-1, height-1 cone along -Z axis:
+
+		cone.type = GL_TRIANGLE_STRIP;
+		cone.start = GLuint(attribs.size());
+
+		attribs.emplace_back( 0.0f, 0.0f, 0.0f, 1.0f);
+		attribs.emplace_back(-1.0f,-1.0f,-1.0f, 1.0f);
+		attribs.emplace_back( 0.0f, 0.0f, 0.0f, 1.0f);
+		attribs.emplace_back( 1.0f,-1.0f,-1.0f, 1.0f);
+		attribs.emplace_back( 0.0f, 0.0f, 0.0f, 1.0f);
+		attribs.emplace_back( 1.0f, 1.0f,-1.0f, 1.0f);
+		attribs.emplace_back( 0.0f, 0.0f, 0.0f, 1.0f);
+		attribs.emplace_back(-1.0f, 1.0f,-1.0f, 1.0f);
+		attribs.emplace_back( 0.0f, 0.0f, 0.0f, 1.0f);
+		attribs.emplace_back(-1.0f,-1.0f,-1.0f, 1.0f);
+		
+		attribs.emplace_back(attribs.back());
+		attribs.emplace_back(-1.0f, 1.0f,-1.0f, 1.0f);
+		attribs.emplace_back(attribs.back());
+		attribs.emplace_back( 1.0f, 1.0f,-1.0f, 1.0f);
+		attribs.emplace_back(-1.0f,-1.0f,-1.0f, 1.0f);
+		attribs.emplace_back( 1.0f,-1.0f,-1.0f, 1.0f);
+
+
+		cone.count = GLuint(attribs.size() - cone.start);
+	}
 
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);

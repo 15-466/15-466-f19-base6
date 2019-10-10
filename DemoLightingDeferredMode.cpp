@@ -3,6 +3,7 @@
 #include "Load.hpp"
 #include "data_path.hpp"
 #include "BasicMaterialDeferredProgram.hpp"
+#include "CopyToScreenProgram.hpp"
 #include "LightMeshes.hpp"
 #include "gl_errors.hpp"
 #include "check_fb.hpp"
@@ -81,8 +82,8 @@ struct FB {
 		//set up position_tex as a 32-bit floating point RGB texture:
 		alloc_tex(position_tex, GL_RGB32F);
 
-		//set up normal_roughness_tex as a 32-bit floating point RGBA texture:
-		alloc_tex(normal_roughness_tex, GL_RGBA32F);
+		//set up normal_roughness_tex as a 16-bit floating point RGBA texture:
+		alloc_tex(normal_roughness_tex, GL_RGBA16F);
 
 		//set up albedo_tex as an 8-bit fixed point RGBA texture:
 		alloc_tex(albedo_tex, GL_RGBA8);
@@ -136,6 +137,22 @@ DemoLightingDeferredMode::DemoLightingDeferredMode() {
 DemoLightingDeferredMode::~DemoLightingDeferredMode() {
 }
 
+bool DemoLightingDeferredMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
+	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_1) {
+		show = ShowOutput;
+	}
+	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_2) {
+		show = ShowPosition;
+	}
+	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_3) {
+		show = ShowNormalRoughness;
+	}
+	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_4) {
+		show = ShowAlbedo;
+	}
+	return DemoLightingMultipassMode::handle_event(evt, window_size);
+}
+
 void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 	fb.resize(drawable_size);
 
@@ -177,23 +194,7 @@ void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 	//--- draw lights, reading geometry from framebuffer ---
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.lights_fb);
-	
-	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
 
-	//draw objects to geometry framebuffers:
-	//spheres_scene_deferred->draw(world_to_clip);
-
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	GL_ERRORS();
-
-	//--- copy lights fb info to screen ---
-	
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_DEPTH_TEST);
@@ -232,8 +233,9 @@ void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 		if (light.type == Scene::Light::Point) {
 			glUniform1i(prog->LIGHT_TYPE_int, 0);
 			glUniform1f(prog->LIGHT_CUTOFF_float, 1.0f);
-			mesh = &light_meshes->everything;
-			float R = 100.0f;
+			mesh = &light_meshes->cube;
+			//when is energy / dis^2 < 1/256.0f?
+			float R = std::sqrt(256.0f * std::max(light.energy.x, std::max(light.energy.y, light.energy.z)));
 			light_to_world = light_to_world * glm::mat4(
 				R, 0.0f, 0.0f, 0.0f,
 				0.0f, R, 0.0f, 0.0f,
@@ -244,7 +246,7 @@ void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 			glUniform1i(prog->LIGHT_TYPE_int, 1);
 			glUniform1f(prog->LIGHT_CUTOFF_float, 1.0f);
 			mesh = &light_meshes->everything;
-			float R = 100.0f;
+			float R = 1.0f;
 			light_to_world = light_to_world * glm::mat4(
 				R, 0.0f, 0.0f, 0.0f,
 				0.0f, R, 0.0f, 0.0f,
@@ -254,11 +256,14 @@ void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 		} else if (light.type == Scene::Light::Spot) {
 			glUniform1i(prog->LIGHT_TYPE_int, 2);
 			glUniform1f(prog->LIGHT_CUTOFF_float, std::cos(0.5f * light.spot_fov));
-			mesh = &light_meshes->everything;
-			float R = 100.0f;
+			mesh = &light_meshes->cone;
+			float R = std::sqrt(256.0f * std::max(light.energy.x, std::max(light.energy.y, light.energy.z)));
+			//HACK: hard-limit to 5 units:
+			R = 5.0f;
+			float C = std::tan(0.5f * light.spot_fov);
 			light_to_world = light_to_world * glm::mat4(
-				R, 0.0f, 0.0f, 0.0f,
-				0.0f, R, 0.0f, 0.0f,
+				C*R, 0.0f, 0.0f, 0.0f,
+				0.0f, C*R, 0.0f, 0.0f,
 				0.0f, 0.0f, R, 0.0f,
 				0.0f, 0.0f, 0.0f, 1.0f
 			);
@@ -266,7 +271,7 @@ void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 			glUniform1i(prog->LIGHT_TYPE_int, 3);
 			glUniform1f(prog->LIGHT_CUTOFF_float, 1.0f);
 			mesh = &light_meshes->everything;
-			float R = 100.0f;
+			float R = 1.0f;
 			light_to_world = light_to_world * glm::mat4(
 				R, 0.0f, 0.0f, 0.0f,
 				0.0f, R, 0.0f, 0.0f,
@@ -294,6 +299,46 @@ void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 
 	glDisable(GL_CULL_FACE);
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	GL_ERRORS();
+
+	//--- copy lights fb info to screen ---
+	
+	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	GL_ERRORS();
+	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
+	GL_ERRORS();
+
+	glBindVertexArray(empty_vao);
+	glUseProgram(copy_to_screen_program->program);
+
+	glActiveTexture(GL_TEXTURE0);
+	if (show == ShowOutput) {
+		glBindTexture(GL_TEXTURE_2D, fb.output_tex);
+	} else if (show == ShowPosition) {
+		glBindTexture(GL_TEXTURE_2D, fb.position_tex);
+	} else if (show == ShowNormalRoughness) {
+		glBindTexture(GL_TEXTURE_2D, fb.normal_roughness_tex);
+	} else if (show == ShowAlbedo) {
+		glBindTexture(GL_TEXTURE_2D, fb.albedo_tex);
+	}
+
+	GL_ERRORS();
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	GL_ERRORS();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+
+
+	GL_ERRORS();
+
 
 }

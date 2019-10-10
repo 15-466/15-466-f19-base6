@@ -2,6 +2,7 @@
 #include "DrawLines.hpp"
 #include "Load.hpp"
 #include "data_path.hpp"
+#include "demo_menu.hpp"
 #include "BasicMaterialProgram.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -57,6 +58,11 @@ DemoLightingMultipassMode::~DemoLightingMultipassMode() {
 }
 
 bool DemoLightingMultipassMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
+	//----- leave to menu -----
+	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_ESCAPE) {
+		Mode::set_current(demo_menu);
+		return true;
+	}
 	//----- trackball-style camera controls -----
 	if (evt.type == SDL_MOUSEBUTTONDOWN) {
 		if (evt.button.button == SDL_BUTTON_LEFT) {

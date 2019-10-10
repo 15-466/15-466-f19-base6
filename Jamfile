@@ -164,6 +164,7 @@ GAME_NAMES =
 	LightMeshes
 	DemoLightingDeferredMode
 	BasicMaterialDeferredProgram
+	CopyToScreenProgram
 	BoneAnimation
 	PlantMode
 	Sound
