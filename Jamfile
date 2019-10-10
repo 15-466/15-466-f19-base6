@@ -156,12 +156,15 @@ if $(OS) = NT { #Windows
 
 #Store the names of all the .cpp files to build into a variable:
 GAME_NAMES =
+	demo_menu
+	DemoLightingMultipassMode
 	BoneAnimation
 	PlantMode
 	Sound
 	load_wav
 	load_opus
 	DrawSprites
+	BasicMaterialProgram
 	ColorTextureProgram
 	LitColorTextureProgram
 	BoneLitColorTextureProgram
@@ -230,7 +233,7 @@ Objects
 	;
 
 LOCATE_TARGET = dist ; #put in 'dist' directory
-MainFromObjects anim_demo : $(GAME_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
+MainFromObjects demo : $(GAME_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
 
 #MainFromObjects client : $(CLIENT_NAMES:S=$(SUFOBJ)) $(COMMON_NAMES:S=$(SUFOBJ)) ;
 

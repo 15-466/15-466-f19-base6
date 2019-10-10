@@ -132,28 +132,33 @@ def write_camera(obj):
 	camera_data += struct.pack('ff', obj.data.clip_start, obj.data.clip_end)
 		
 #write_lamp will add an object to the lamp section:
-def write_lamp(obj):
+def write_light(obj):
 	global lamp_data
-	assert(obj.type == 'LAMP')
+	assert(obj.type == 'LIGHT')
 	print("lamp: " + obj.name)
 
+	f = 1.0 #factor to multiply energy by
 	lamp_data += write_xfh(obj) #hierarchy reference
 	if obj.data.type == 'POINT':
 		lamp_data += b"p"
-	elif obj.data.type == 'SUN' and obj.data.type.angle > 179.0 / 3.1416926:
+		f = 1.0 / (4.0 * 3.1415926)
+	elif obj.data.type == 'SUN' and obj.data.angle > 179.0 / 180.0 * 3.1416926:
 		lamp_data += b"h"
 	elif obj.data.type == 'SPOT':
 		lamp_data += b"s"
+		f = 1.0 / (4.0 * 3.1415926)
 	elif obj.data.type == 'SUN':
 		lamp_data += b"d"
 	else:
 		assert(False and "Unsupported lamp type '" + obj.data.type + "'")
+	print("  Type: " + lamp_data[-1:].decode('utf8'))
 	lamp_data += struct.pack('BBB',
 		int(obj.data.color.r * 255),
 		int(obj.data.color.g * 255),
 		int(obj.data.color.b * 255)
 		)
-	lamp_data += struct.pack('f', obj.data.energy)
+	print("  Energy: " + str(f*obj.data.energy))
+	lamp_data += struct.pack('f', f*obj.data.energy)
 	lamp_data += struct.pack('f', obj.data.distance)
 	if obj.data.type == 'SPOT':
 		fov = obj.data.spot_size/math.pi*180.0
@@ -173,8 +178,8 @@ def write_objects(from_collection):
 			write_mesh(obj)
 		elif obj.type == 'CAMERA':
 			write_camera(obj)
-		elif obj.type == 'LAMP':
-			write_lamp(obj)
+		elif obj.type == 'LIGHT':
+			write_light(obj)
 		else:
 			print('Skipping ' + obj.type)
 	for child in from_collection.children:

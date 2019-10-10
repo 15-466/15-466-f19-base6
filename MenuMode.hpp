@@ -44,9 +44,15 @@ struct MenuMode : Mode {
 	};
 	std::vector< Item > items;
 
+	//call to arrange items in a centered list:
+	void layout_items(float gap = 0.0f);
+
 	//if set, used to highlight the current selection:
 	Sprite const *left_select = nullptr;
 	Sprite const *right_select = nullptr;
+
+	glm::vec2 left_select_offset = glm::vec2(0.0f);
+	glm::vec2 right_select_offset = glm::vec2(0.0f);
 
 	glm::u8vec4 left_select_tint = glm::u8vec4(0xff);
 	glm::u8vec4 right_select_tint = glm::u8vec4(0xff);

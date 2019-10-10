@@ -6,10 +6,10 @@ dist/README-libopus.txt
 dist/README-libpng.txt
 dist/README-opusfile.txt
 dist/SDL2.dll
-dist/anim_demo
-dist/anim_demo.exe
-dist/anim_demo.ilk
-dist/anim_demo.pdb
+dist/demo
+dist/demo.exe
+dist/demo.ilk
+dist/demo.pdb
 sprites/pack-sprites
 sprites/pack-sprites.exe
 sprites/pack-sprites.ilk

@@ -2,7 +2,7 @@
 #include "Mode.hpp"
 
 //Starting mode:
-#include "PlantMode.hpp"
+#include "demo_menu.hpp"
 
 //Deal with calling resource loading functions:
 #include "Load.hpp"
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
 	//create window:
 	SDL_Window *window = SDL_CreateWindow(
-		"gp19 Bone Animation", //TODO: remember to set a title for your game!
+		"gp19 demo", //TODO: remember to set a title for your game!
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		960, 600, //TODO: modify window size if you'd like
 		SDL_WINDOW_OPENGL
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< PlantMode >());
+	Mode::set_current(demo_menu);
 
 	//------------ main loop ------------
 

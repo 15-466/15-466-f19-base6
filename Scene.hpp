@@ -6,7 +6,7 @@
  * Each transformation may have associated:
  *  - Drawing data (via "Drawable")
  *  - Camera information (via "Camera")
- *  - Light information (via "Lamp")
+ *  - Light information (via "Light")
  *
  * This associated information 
  *
@@ -71,6 +71,7 @@ struct Scene {
 			GLuint OBJECT_TO_CLIP_mat4 = -1U; //uniform location for object to clip space matrix
 			GLuint OBJECT_TO_LIGHT_mat4x3 = -1U; //uniform location for object to light space (== world space) matrix
 			GLuint NORMAL_TO_LIGHT_mat3 = -1U; //uniform location for normal to light space (== world space) matrix
+
 			std::function< void() > set_uniforms; //(optional) function to set any other useful uniforms
 
 			//texture objects to bind for the first TextureCount textures:
@@ -96,9 +97,9 @@ struct Scene {
 		glm::mat4 make_projection() const;
 	};
 
-	struct Lamp {
-		//a 'Lamp' attaches light data to a transform:
-		Lamp(Transform *transform_) : transform(transform_) { assert(transform); }
+	struct Light {
+		//a 'Light' attaches light data to a transform:
+		Light(Transform *transform_) : transform(transform_) { assert(transform); }
 		Transform * transform;
 		//NOTE: directional, spot, and hemisphere lights are directed along their -z axis
 
@@ -120,7 +121,7 @@ struct Scene {
 	std::list< Transform > transforms;
 	std::list< Drawable > drawables;
 	std::list< Camera > cameras;
-	std::list< Lamp > lamps;
+	std::list< Light > lights;
 
 	//The "draw" function provides a convenient way to pass all the things in a scene to OpenGL:
 	void draw(Camera const &camera) const;

@@ -11,6 +11,8 @@ endif
 all : \
 	../dist/plant.pnct \
 	../dist/plant.banims \
+	../dist/spheres.pnct \
+	../dist/spheres.scene \
 
 
 ../dist/plant.pnct : plant.blend export-meshes.py
@@ -18,6 +20,12 @@ all : \
 
 ../dist/plant.banims : plant.blend export-bone-animations.py
 	$(BLENDER) --background --python export-bone-animations.py -- '$<' 'Plant' '[0,30]Wind;[100,140]Walk' '$@'
+
+../dist/spheres.scene : spheres.blend export-scene.py
+	$(BLENDER) --background --python export-scene.py -- 'spheres.blend' '$@'
+
+../dist/spheres.pnct : spheres.blend export-meshes.py
+	$(BLENDER) --background --python export-meshes.py -- 'spheres.blend' '$@'
 
 #../dist/pool.scene : pool.blend export-scene.py
 #	$(BLENDER) --background --python export-scene.py -- 'pool.blend:Table 1' '$@'
