@@ -67,8 +67,8 @@ struct MenuMode : Mode {
 	uint32_t selected = 0;
 
 	//area to display; by default, menu lays items out in the [-1,1]^2 box:
-	glm::uvec2 view_min = glm::vec2(-1.0f, -1.0f);
-	glm::uvec2 view_max = glm::vec2( 1.0f,  1.0f);
+	glm::vec2 view_min = glm::vec2(-1.0f, -1.0f);
+	glm::vec2 view_max = glm::vec2( 1.0f,  1.0f);
 
 	//if not nullptr, background's functions are called as follows:
 	// background->handle_event() is called at the end of handle_event() [if this doesn't handle the event]

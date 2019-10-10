@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <algorithm>
 
 GLuint spheres_for_basic_material_forward = -1U;
 extern Load< MeshBuffer > spheres_meshes;
@@ -60,7 +61,7 @@ void DemoLightingForwardMode::draw(glm::uvec2 const &drawable_size) {
 	glm::mat4 world_to_clip = scene_camera->make_projection() * scene_camera->transform->make_world_to_local();
 
 	//compute light uniforms:
-	uint32_t lights = spheres_scene_forward->lights.size();
+	uint32_t lights = uint32_t(spheres_scene_forward->lights.size());
 	//clamp lights to maximum lights allowed by shader:
 	lights = std::min< uint32_t >(lights, BasicMaterialForwardProgram::MaxLights);
 

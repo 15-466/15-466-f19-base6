@@ -8,7 +8,7 @@ LightMeshes::LightMeshes() {
 
 	{ //'everything' cube:
 		everything.type = GL_TRIANGLE_STRIP;
-		everything.start = attribs.size();
+		everything.start = GLuint(attribs.size());
 
 		attribs.emplace_back(-1.0f,-1.0f, 1.0f, 1.0f);
 		attribs.emplace_back(-1.0f,-1.0f,-1.0f, 1.0f);
@@ -36,7 +36,7 @@ LightMeshes::LightMeshes() {
 		attribs.emplace_back( 1.0f,-1.0f,-1.0f, 1.0f);
 
 
-		everything.count = attribs.size() - everything.start;
+		everything.count = GLuint(attribs.size() - everything.start);
 	}
 
 	sphere = everything;
