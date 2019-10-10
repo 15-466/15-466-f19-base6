@@ -27,6 +27,14 @@ Load< Scene > spheres_scene_multipass(LoadTagLate, []() -> Scene const * {
 		pipeline.type = mesh.type;
 		pipeline.start = mesh.start;
 		pipeline.count = mesh.count;
+
+		float roughness = 1.0f;
+		if (transform->name.substr(0, 9) == "Icosphere") {
+			roughness = (transform->position.y + 10.0f) / 18.0f;
+		}
+		pipeline.set_uniforms = [roughness](){
+			glUniform1f(basic_material_program->ROUGHNESS_float, roughness);
+		};
 		
 	});
 });
@@ -114,7 +122,7 @@ void DemoLightingMultipassMode::draw(glm::uvec2 const &drawable_size) {
 
 
 	//--- actual drawing ---
-	glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);

@@ -178,6 +178,5 @@ void MenuMode::layout_items(float gap) {
 	float ofs = -0.5f * y;
 	for (auto &item : items) {
 		item.at.y += ofs;
-		std::cout << "Item '" << item.name << "': " << item.at.x << ", " << item.at.y << std::endl;
 	}
 }
