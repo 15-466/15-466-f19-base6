@@ -136,6 +136,23 @@ int main(int argc, char **argv) {
 				} else if (evt.type == SDL_QUIT) {
 					Mode::set_current(nullptr);
 					break;
+				} else if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_F4) {
+					// --- report draw timing key ---
+					glFinish();
+					auto start_time = std::chrono::high_resolution_clock::now();
+					uint32_t draws = 0;
+					while (1) {
+						++draws;
+						assert(Mode::current);
+						Mode::current->draw(drawable_size);
+						glFinish();
+						double duration = std::chrono::duration< double >(std::chrono::high_resolution_clock::now() - start_time).count();
+						if (duration > 1.0f) {
+							std::cout << "Drew " << draws << " times in " << duration << " seconds; " << (duration * 1000.0) / draws << "ms per frame; " << draws / duration << " frames per second." << std::endl;
+							break;
+						}
+					}
+
 				} else if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_PRINTSCREEN) {
 					// --- screenshot key ---
 					std::string filename = "screenshot.png";

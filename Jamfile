@@ -158,13 +158,15 @@ if $(OS) = NT { #Windows
 GAME_NAMES =
 	demo_menu
 	DemoLightingMultipassMode
+	BasicMaterialProgram
+	DemoLightingForwardMode
+	BasicMaterialForwardProgram
 	BoneAnimation
 	PlantMode
 	Sound
 	load_wav
 	load_opus
 	DrawSprites
-	BasicMaterialProgram
 	ColorTextureProgram
 	LitColorTextureProgram
 	BoneLitColorTextureProgram

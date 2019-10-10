@@ -5,6 +5,7 @@
 
 #include "PlantMode.hpp"
 #include "DemoLightingMultipassMode.hpp"
+#include "DemoLightingForwardMode.hpp"
 
 Load< SpriteAtlas > trade_font_atlas(LoadTagDefault, []() -> SpriteAtlas const * {
 	return new SpriteAtlas(data_path("trade-font"));
@@ -22,6 +23,10 @@ Load< void > load_demo_menu(LoadTagDefault, [](){
 	items.emplace_back("lighting - multipass");
 	items.back().on_select = [](MenuMode::Item const &){
 		Mode::set_current(std::make_shared< DemoLightingMultipassMode >());
+	};
+	items.emplace_back("lighting - forward");
+	items.back().on_select = [](MenuMode::Item const &){
+		Mode::set_current(std::make_shared< DemoLightingForwardMode >());
 	};
 
 	demo_menu = std::make_shared< MenuMode >(items);
