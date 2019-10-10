@@ -161,6 +161,9 @@ GAME_NAMES =
 	BasicMaterialProgram
 	DemoLightingForwardMode
 	BasicMaterialForwardProgram
+	LightMeshes
+	DemoLightingDeferredMode
+	BasicMaterialDeferredProgram
 	BoneAnimation
 	PlantMode
 	Sound

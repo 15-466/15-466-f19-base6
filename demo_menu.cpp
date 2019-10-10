@@ -6,6 +6,7 @@
 #include "PlantMode.hpp"
 #include "DemoLightingMultipassMode.hpp"
 #include "DemoLightingForwardMode.hpp"
+#include "DemoLightingDeferredMode.hpp"
 
 Load< SpriteAtlas > trade_font_atlas(LoadTagDefault, []() -> SpriteAtlas const * {
 	return new SpriteAtlas(data_path("trade-font"));
@@ -28,6 +29,11 @@ Load< void > load_demo_menu(LoadTagDefault, [](){
 	items.back().on_select = [](MenuMode::Item const &){
 		Mode::set_current(std::make_shared< DemoLightingForwardMode >());
 	};
+	items.emplace_back("lighting - deferred");
+	items.back().on_select = [](MenuMode::Item const &){
+		Mode::set_current(std::make_shared< DemoLightingDeferredMode >());
+	};
+
 
 	demo_menu = std::make_shared< MenuMode >(items);
 	demo_menu->selected = 1;
