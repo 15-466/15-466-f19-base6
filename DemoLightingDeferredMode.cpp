@@ -10,6 +10,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 GLuint spheres_for_basic_material_deferred_object = 0;
