@@ -13,15 +13,22 @@ matrix:
     - wget -c https://github.com/15-466/nest-libs/releases/download/v0.2/nest-libs-linux-v0.2.tar.gz
     - tar -zxvf nest-libs-linux-v0.2.tar.gz
     - mv nest-libs ..
+    - mkdir -p dist
     script: jam
   - name: mac
     os: osx
     compiler: clang
+    addons:
+            homebrew:
+                    packages:
+                            - ftjam
+                    update: true
     before_install:
     - brew install ftjam
     - wget -c https://github.com/15-466/nest-libs/releases/download/v0.2/nest-libs-macos-v0.2.tar.gz
     - tar -xzvf nest-libs-macos-v0.2.tar.gz
     - mv nest-libs ..
+    - mkdir -p dist
 script:
 - jam
 
